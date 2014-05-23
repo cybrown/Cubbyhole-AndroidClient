@@ -1,4 +1,4 @@
-package com.cubbyhole.android;
+package com.cubbyhole.android.model;
 
 public class File {
     private String name;

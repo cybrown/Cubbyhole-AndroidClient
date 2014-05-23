@@ -1,5 +1,9 @@
 package com.cubbyhole.android;
 
+import com.cubbyhole.android.activity.MainActivity;
+import com.cubbyhole.android.service.FileService;
+import com.cubbyhole.android.service.HelloWorldService;
+
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -9,8 +13,7 @@ import retrofit.RestAdapter;
 
 @Module(
     injects = {
-        MainActivity.class,
-        HelloWorldService.class
+        MainActivity.class
     }
 )
 public class CubbyholeAndroidClientModule {

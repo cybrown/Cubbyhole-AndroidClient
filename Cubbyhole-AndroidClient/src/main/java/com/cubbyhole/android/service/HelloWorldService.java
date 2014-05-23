@@ -1,4 +1,4 @@
-package com.cubbyhole.android;
+package com.cubbyhole.android.service;
 
 public class HelloWorldService {
     public String getHello() {

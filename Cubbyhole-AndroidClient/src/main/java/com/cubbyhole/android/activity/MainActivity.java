@@ -1,4 +1,4 @@
-package com.cubbyhole.android;
+package com.cubbyhole.android.activity;
 
 import android.app.Activity;
 
@@ -13,6 +13,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.widget.TextView;
+
+import com.cubbyhole.android.CubbyholeAndroidClientApp;
+import com.cubbyhole.android.R;
+import com.cubbyhole.android.fragment.NavigationDrawerFragment;
+import com.cubbyhole.android.service.FileService;
+import com.cubbyhole.android.service.HelloWorldService;
 
 import javax.inject.Inject;
 
@@ -31,6 +37,9 @@ public class MainActivity extends Activity
 
     @Inject
     public HelloWorldService helloWorldService;
+
+    @Inject
+    public FileService fileService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
