@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/Cubbyhole-AndroidClient.iml" filepath="$PROJECT_DIR$/Cubbyhole-AndroidClient.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Cubbyhole-AndroidClient/Cubbyhole-AndroidClient-Cubbyhole-AndroidClient.iml" filepath="$PROJECT_DIR$/Cubbyhole-AndroidClient/Cubbyhole-AndroidClient-Cubbyhole-AndroidClient.iml" />
+    </modules>
+  </component>
+</project>
+
