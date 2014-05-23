@@ -4,6 +4,8 @@ import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
+import retrofit.RequestInterceptor;
+import retrofit.RestAdapter;
 
 @Module(
     injects = {
@@ -22,5 +24,21 @@ public class CubbyholeAndroidClientModule {
     @Singleton
     public HelloWorldService provideHelloWorldService() {
         return new HelloWorldService();
+    }
+
+    @Provides
+    @Singleton
+    public FileService provideFileService() {
+        RequestInterceptor interceptor = new RequestInterceptor() {
+            @Override
+            public void intercept(RequestFacade requestFacade) {
+                requestFacade.addHeader("Authorization", "Basic dXNlcjpwYXNz");
+            }
+        };
+        return new RestAdapter.Builder()
+                .setEndpoint("http://192.168.1.97:3000/")
+                .setRequestInterceptor(interceptor)
+                .build()
+                .create(FileService.class);
     }
 }
