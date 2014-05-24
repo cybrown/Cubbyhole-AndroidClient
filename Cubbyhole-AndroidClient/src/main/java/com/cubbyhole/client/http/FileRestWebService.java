@@ -14,9 +14,9 @@ import rx.Observable;
 
 public interface FileRestWebService {
     @GET("/files/") Observable<List<File>> findRoot();
-    @GET("/files/{file}") Observable<File> find(@Path("file") int file);
-    @GET("/files/{file}/list") Observable<List<File>> list(@Path("file") int file);
+    @GET("/files/{file}") Observable<File> find(@Path("file") long file);
+    @GET("/files/{file}/list") Observable<List<File>> list(@Path("file") long file);
     @PUT("/files") Observable<Void> create(@Body File file);
     @POST("/files") Observable<Void> save(@Body File file);
-    @DELETE("/files/{file}") Observable<Void> delete(@Path("file") int file);
+    @DELETE("/files/{file}") Observable<Void> delete(@Path("file") long file);
 }

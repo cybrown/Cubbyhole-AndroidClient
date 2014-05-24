@@ -5,9 +5,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.cubbyhole.android.R;
+import com.cubbyhole.android.cell.FileCell;
+import com.cubbyhole.android.fragment.FileListFragment;
 import com.cubbyhole.client.model.File;
 
 import java.util.List;
@@ -16,9 +19,9 @@ import java.util.List;
 public class FileListAdapter extends BaseAdapter {
 
     private final Context context;
-    private final List<File> files;
+    private final List<FileCell> files;
 
-    public FileListAdapter(Context context, List<File> files) {
+    public FileListAdapter(Context context, List<FileCell> files) {
         this.context = context;
         this.files = files;
     }
@@ -35,17 +38,24 @@ public class FileListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int i) {
-        return this.files.get(i).getId();
+        return this.files.get(i).getFile().getId();
     }
 
     @Override
-    public View getView(int i, View arg1, ViewGroup viewGroup) {
+    public View getView(final int i, View arg1, ViewGroup viewGroup) {
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.cell_file, null);
         TextView tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-        tvTitle.setText(this.files.get(i).getName());
+        tvTitle.setText(this.files.get(i).getFile().getName());
         TextView tvSubtitle = (TextView) view.findViewById(R.id.tvSubtitle);
-        tvSubtitle.setText(String.valueOf(this.files.get(i).getId()));
+        tvSubtitle.setText(String.valueOf(this.files.get(i).getFile().getId()));
+        final CheckBox chkSelected = (CheckBox) view.findViewById(R.id.chkSelected);
+        chkSelected.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FileListAdapter.this.files.get(i).setChecked(chkSelected.isChecked());
+            }
+        });
         return view;
     }
 }
