@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,7 +19,6 @@ import com.cubbyhole.android.cell.FileCell;
 import com.cubbyhole.client.http.FileRestWebService;
 import com.cubbyhole.client.model.File;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -35,7 +33,7 @@ public class FileListFragment extends Fragment {
     @Inject
     FileRestWebService fileService;
 
-    private List<FileCell> files = new LinkedList<FileCell>();
+    private List<FileCell> fileCells = new LinkedList<FileCell>();
 
     private void refreshFileList() {
         fileService.findRoot()
@@ -55,9 +53,9 @@ public class FileListFragment extends Fragment {
                 @Override
                 public void onNext(final List<File> files) {
                     final ListView lstFiles = (ListView) FileListFragment.this.getView().findViewById(R.id.lstFiles);
-                    FileListFragment.this.files.clear();
+                    FileListFragment.this.fileCells.clear();
                     for (File file: files) {
-                        FileListFragment.this.files.add(new FileCell(file));
+                        FileListFragment.this.fileCells.add(new FileCell(file));
                     }
                     ((FileListAdapter) lstFiles.getAdapter()).notifyDataSetChanged();
                 }
@@ -76,7 +74,7 @@ public class FileListFragment extends Fragment {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_file_list, null);
         ((ListView) view.findViewById(R.id.lstFiles))
-            .setAdapter(new FileListAdapter(this.getActivity(), this.files));
+            .setAdapter(new FileListAdapter(this.getActivity(), this.fileCells));
         return view;
     }
 
@@ -154,7 +152,7 @@ public class FileListFragment extends Fragment {
 
     private List<File> getSelectedFiles() {
         List<File> filesToDelete = new LinkedList<File>();
-        for (final FileCell fileCell : this.files) {
+        for (final FileCell fileCell : this.fileCells) {
             if (fileCell.isChecked()) {
                 filesToDelete.add(fileCell.getFile());
             }
