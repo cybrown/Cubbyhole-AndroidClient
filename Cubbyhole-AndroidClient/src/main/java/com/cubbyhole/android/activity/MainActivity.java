@@ -13,8 +13,7 @@ import com.cubbyhole.android.R;
 import com.cubbyhole.android.fragment.FileListFragment;
 import com.cubbyhole.android.fragment.HomeFragment;
 import com.cubbyhole.android.fragment.NavigationDrawerFragment;
-import com.cubbyhole.android.service.FileService;
-import com.cubbyhole.android.service.HelloWorldService;
+import com.cubbyhole.client.http.FileRestWebService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,10 +34,7 @@ public class MainActivity extends Activity
     private CharSequence mTitle;
 
     @Inject
-    public HelloWorldService helloWorldService;
-
-    @Inject
-    public FileService fileService;
+    public FileRestWebService fileService;
 
     private Fragment currentFragment;
 

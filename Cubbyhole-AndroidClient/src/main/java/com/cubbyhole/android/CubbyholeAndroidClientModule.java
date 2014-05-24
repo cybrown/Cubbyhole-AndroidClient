@@ -1,15 +1,21 @@
 package com.cubbyhole.android;
 
+import android.util.Base64;
+import android.util.Base64OutputStream;
+
 import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.fragment.FileListFragment;
-import com.cubbyhole.android.service.FileService;
-import com.cubbyhole.android.service.HelloWorldService;
+import com.cubbyhole.client.http.BasicAuthInterceptor;
+import com.cubbyhole.client.http.ConnectionInfo;
+import com.cubbyhole.client.http.FileRestWebService;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
-import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 
 @Module(
@@ -27,23 +33,29 @@ public class CubbyholeAndroidClientModule {
 
     @Provides
     @Singleton
-    public HelloWorldService provideHelloWorldService() {
-        return new HelloWorldService();
+    public ConnectionInfo provideConnectionInfo() {
+        ConnectionInfo connectionInfo = new ConnectionInfo();
+        connectionInfo.setUsername("user");
+        connectionInfo.setPassword("pass");
+        connectionInfo.setHost("192.168.1.97");
+        connectionInfo.setPort(3000);
+        connectionInfo.setProtocol("http");
+        return connectionInfo;
     }
 
     @Provides
     @Singleton
-    public FileService provideFileService() {
-        RequestInterceptor interceptor = new RequestInterceptor() {
-            @Override
-            public void intercept(RequestFacade requestFacade) {
-                requestFacade.addHeader("Authorization", "Basic dXNlcjpwYXNz");
-            }
-        };
+    public FileRestWebService provideFileService(final BasicAuthInterceptor basicAuthInterceptor, final ConnectionInfo connectionInfo) {
+        URL url = null;
+        try {
+            url = new URL(connectionInfo.getProtocol(), connectionInfo.getHost(), connectionInfo.getPort(), "");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
         return new RestAdapter.Builder()
-                .setEndpoint("http://192.168.1.97:3000/")
-                .setRequestInterceptor(interceptor)
+                .setEndpoint(url.toString())
+                .setRequestInterceptor(basicAuthInterceptor)
                 .build()
-                .create(FileService.class);
+                .create(FileRestWebService.class);
     }
 }

@@ -16,8 +16,8 @@ import android.widget.ListView;
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.adapter.FileListAdapter;
+import com.cubbyhole.client.http.FileRestWebService;
 import com.cubbyhole.client.model.File;
-import com.cubbyhole.android.service.FileService;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +29,8 @@ import rx.android.schedulers.AndroidSchedulers;
 
 public class FileListFragment extends Fragment {
 
-    @Inject FileService fileService;
+    @Inject
+    FileRestWebService fileService;
 
     private List<File> files = new LinkedList<File>();
 
