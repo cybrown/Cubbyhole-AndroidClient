@@ -4,6 +4,9 @@
     <item android:id="@+id/action_example"
         android:title="@string/action_example"
         android:showAsAction="withText|ifRoom" />
+    <item android:id="@+id/action_mkdir"
+        android:title="Create Dir"
+        android:showAsAction="ifRoom"/>
     <item android:id="@+id/action_settings"
         android:title="@string/action_settings"
         android:orderInCategory="100"

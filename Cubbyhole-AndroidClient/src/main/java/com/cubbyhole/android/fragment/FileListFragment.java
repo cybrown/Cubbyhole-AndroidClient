@@ -1,10 +1,16 @@
 package com.cubbyhole.android.fragment;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
@@ -61,5 +67,54 @@ public class FileListFragment extends Fragment {
         ((ListView) view.findViewById(R.id.lstFiles))
             .setAdapter(new FileListAdapter(this.getActivity(), this.files));
         return view;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_mkdir:
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Create Folder");
+                final EditText txtName = new EditText(getActivity());
+                builder.setView(txtName);
+                builder.setPositiveButton("Create", new Dialog.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        File file = new File();
+                        file.setName(txtName.getText().toString());
+                        file.setParent(0);
+                        file.setFolder(true);
+                        fileService.create(file).subscribe(new Observer<Void>() {
+                            @Override
+                            public void onCompleted() {
+
+                            }
+
+                            @Override
+                            public void onError(Throwable throwable) {
+
+                            }
+
+                            @Override
+                            public void onNext(Void aVoid) {
+
+                            }
+                        });
+                    }
+                });
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                break;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+        return true;
     }
 }
