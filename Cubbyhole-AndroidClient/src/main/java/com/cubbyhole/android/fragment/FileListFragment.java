@@ -34,10 +34,7 @@ public class FileListFragment extends Fragment {
 
     private List<File> files = new LinkedList<File>();
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        ((CubbyholeAndroidClientApp)getActivity().getApplication()).getObjectGraph().inject(this);
+    private void refreshFileList() {
         fileService.findRoot()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(new Observer<List<File>>() {
@@ -45,7 +42,6 @@ public class FileListFragment extends Fragment {
                 public void onCompleted() {
 
                 }
-
                 @Override
                 public void onError(Throwable throwable) {
 
@@ -59,6 +55,13 @@ public class FileListFragment extends Fragment {
                     ((FileListAdapter) lstFiles.getAdapter()).notifyDataSetChanged();
                 }
             });
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        ((CubbyholeAndroidClientApp)getActivity().getApplication()).getObjectGraph().inject(this);
+        this.refreshFileList();
     }
 
     @Override
@@ -82,32 +85,32 @@ public class FileListFragment extends Fragment {
 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        File file = new File();
-                        file.setName(txtName.getText().toString());
-                        file.setParent(0);
-                        file.setFolder(true);
-                        fileService.create(file).subscribe(new Observer<Void>() {
-                            @Override
-                            public void onCompleted() {
+                    File file = new File();
+                    file.setName(txtName.getText().toString());
+                    file.setParent(0);
+                    file.setFolder(true);
+                    fileService.create(file).subscribe(new Observer<Void>() {
+                        @Override
+                        public void onCompleted() {
+                            FileListFragment.this.refreshFileList();
+                        }
 
-                            }
+                        @Override
+                        public void onError(Throwable throwable) {
 
-                            @Override
-                            public void onError(Throwable throwable) {
+                        }
 
-                            }
+                        @Override
+                        public void onNext(Void aVoid) {
 
-                            @Override
-                            public void onNext(Void aVoid) {
-
-                            }
-                        });
+                        }
+                    });
                     }
                 });
                 builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.cancel();
+                    dialogInterface.cancel();
                     }
                 });
                 AlertDialog dialog = builder.create();
