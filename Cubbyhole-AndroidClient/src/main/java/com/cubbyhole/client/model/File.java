@@ -1,4 +1,4 @@
-package com.cubbyhole.android.model;
+package com.cubbyhole.client.model;
 
 public class File {
     private long id;

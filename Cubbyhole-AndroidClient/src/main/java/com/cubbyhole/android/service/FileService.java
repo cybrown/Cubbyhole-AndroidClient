@@ -1,6 +1,6 @@
 package com.cubbyhole.android.service;
 
-import com.cubbyhole.android.model.File;
+import com.cubbyhole.client.model.File;
 
 import java.util.List;
 

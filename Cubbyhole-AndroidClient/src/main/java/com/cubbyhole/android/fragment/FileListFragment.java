@@ -10,7 +10,7 @@ import android.widget.ListView;
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.adapter.FileListAdapter;
-import com.cubbyhole.android.model.File;
+import com.cubbyhole.client.model.File;
 import com.cubbyhole.android.service.FileService;
 
 import java.util.LinkedList;
