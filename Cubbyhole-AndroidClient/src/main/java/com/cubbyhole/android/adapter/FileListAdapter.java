@@ -35,7 +35,7 @@ public class FileListAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int i) {
-        return 0;
+        return this.files.get(i).getId();
     }
 
     @Override
@@ -45,7 +45,7 @@ public class FileListAdapter extends BaseAdapter {
         TextView tvTitle = (TextView) view.findViewById(R.id.tvTitle);
         tvTitle.setText(this.files.get(i).getName());
         TextView tvSubtitle = (TextView) view.findViewById(R.id.tvSubtitle);
-        tvSubtitle.setText("ok");
+        tvSubtitle.setText(String.valueOf(this.files.get(i).getId()));
         return view;
     }
 }
