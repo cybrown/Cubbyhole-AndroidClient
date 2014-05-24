@@ -1,6 +1,7 @@
 package com.cubbyhole.android;
 
 import com.cubbyhole.android.activity.MainActivity;
+import com.cubbyhole.android.fragment.FileListFragment;
 import com.cubbyhole.android.service.FileService;
 import com.cubbyhole.android.service.HelloWorldService;
 
@@ -13,7 +14,8 @@ import retrofit.RestAdapter;
 
 @Module(
     injects = {
-        MainActivity.class
+        MainActivity.class,
+        FileListFragment.class
     }
 )
 public class CubbyholeAndroidClientModule {

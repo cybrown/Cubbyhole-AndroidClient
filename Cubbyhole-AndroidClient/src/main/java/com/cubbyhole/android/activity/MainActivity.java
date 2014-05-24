@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -16,6 +17,8 @@ import android.widget.TextView;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
+import com.cubbyhole.android.fragment.FileListFragment;
+import com.cubbyhole.android.fragment.HomeFragment;
 import com.cubbyhole.android.fragment.NavigationDrawerFragment;
 import com.cubbyhole.android.service.FileService;
 import com.cubbyhole.android.service.HelloWorldService;
@@ -59,17 +62,26 @@ public class MainActivity extends Activity
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        // update the main content by replacing fragments
         FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
-                .commit();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        switch (position) {
+            case 0:
+                transaction.replace(R.id.container, new HomeFragment());
+                break;
+            case 1:
+                transaction.replace(R.id.container, new FileListFragment());
+                break;
+            case 2:
+                transaction.replace(R.id.container, PlaceholderFragment.newInstance(position + 1));
+                break;
+        }
+        transaction.commit();
     }
 
     public void onSectionAttached(int number) {
         switch (number) {
             case 1:
-                mTitle = this.helloWorldService.getHello();
+                mTitle = getString(R.string.title_section1);
                 break;
             case 2:
                 mTitle = getString(R.string.title_section2);
