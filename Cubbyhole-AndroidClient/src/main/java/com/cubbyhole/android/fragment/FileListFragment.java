@@ -84,7 +84,6 @@ public class FileListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_file_list, null);
         ButterKnife.inject(this, view);
         lstFiles.setAdapter(new FileListAdapter(getActivity(), fileCells));
-        lstFiles.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
         lstFiles.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
