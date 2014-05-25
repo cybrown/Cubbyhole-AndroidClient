@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.cubbyhole.android" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".CubbyholeAndroidClientApp"
         android:allowBackup="true"
@@ -18,7 +20,5 @@
             </intent-filter>
         </activity>
     </application>
-
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
 
 </manifest>
