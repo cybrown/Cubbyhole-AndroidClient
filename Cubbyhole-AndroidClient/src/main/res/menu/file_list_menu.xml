@@ -6,4 +6,6 @@
         android:title="@string/action_browse"/>
     <item android:id="@+id/action_rename"
         android:title="@string/action_rename"/>
+    <item android:id="@+id/action_move"
+        android:title="@string/action_move"/>
 </menu>

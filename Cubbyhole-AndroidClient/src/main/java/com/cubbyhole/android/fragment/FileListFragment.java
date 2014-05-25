@@ -116,8 +116,14 @@ public class FileListFragment extends Fragment {
             case R.id.action_rename:
                 renameFile(fileForMenu);
                 break;
+            case R.id.action_move:
+                moveFile(fileForMenu);
+                break;
         }
         return super.onContextItemSelected(item);
+    }
+
+    private void moveFile(File fileForMenu) {
     }
 
     @OnItemClick(R.id.lstFiles)
