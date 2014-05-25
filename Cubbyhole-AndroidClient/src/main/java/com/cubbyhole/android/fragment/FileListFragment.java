@@ -5,20 +5,17 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
-import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.adapter.FileListAdapter;
 import com.cubbyhole.android.cell.FileCell;
 import com.cubbyhole.android.parcelable.ParcelableFile;
@@ -29,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
