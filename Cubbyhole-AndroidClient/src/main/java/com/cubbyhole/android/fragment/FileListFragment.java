@@ -34,6 +34,7 @@ import javax.inject.Provider;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnItemClick;
+import butterknife.OnItemLongClick;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -84,13 +85,6 @@ public class FileListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_file_list, null);
         ButterKnife.inject(this, view);
         lstFiles.setAdapter(new FileListAdapter(getActivity(), fileCells));
-        lstFiles.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                fileForMenu = fileCells.get(i).getFile();
-                return false;
-            }
-        });
         this.registerForContextMenu(view);
         return view;
     }
@@ -124,6 +118,12 @@ public class FileListFragment extends Fragment {
     @OnItemClick(R.id.lstFiles)
     public void onItemClickLstFiles(AdapterView<?> adapterView, View view, int i, long l) {
         openFile(fileCells.get(i).getFile());
+    }
+
+    @OnItemLongClick(R.id.lstFiles)
+    public boolean onItemLongClickLstFiles(AdapterView<?> adapterView, View view, int i, long l) {
+        fileForMenu = fileCells.get(i).getFile();
+        return false;
     }
 
     @Override
