@@ -16,10 +16,10 @@ import dagger.Provides;
 import retrofit.RestAdapter;
 
 @Module(
-        injects = {
-                MainActivity.class,
-                FileListFragment.class
-        }
+    injects = {
+        MainActivity.class,
+        FileListFragment.class
+    }
 )
 public class CubbyholeAndroidClientModule {
     private CubbyholeAndroidClientApp application;
@@ -34,9 +34,9 @@ public class CubbyholeAndroidClientModule {
         ConnectionInfo connectionInfo = new ConnectionInfo();
         connectionInfo.setUsername("user");
         connectionInfo.setPassword("pass");
-        //connectionInfo.setHost("192.168.1.97");
         connectionInfo.setHost("37.187.46.33");
-        connectionInfo.setPort(3000);
+        connectionInfo.setPort(80);
+        connectionInfo.setPath("/api/v1/");
         connectionInfo.setProtocol("http");
         return connectionInfo;
     }
@@ -46,7 +46,7 @@ public class CubbyholeAndroidClientModule {
     public FileRestWebService provideFileService(final BasicAuthInterceptor basicAuthInterceptor, final ConnectionInfo connectionInfo) {
         URL url = null;
         try {
-            url = new URL(connectionInfo.getProtocol(), connectionInfo.getHost(), connectionInfo.getPort(), "");
+            url = new URL(connectionInfo.getProtocol(), connectionInfo.getHost(), connectionInfo.getPort(), connectionInfo.getPath());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }

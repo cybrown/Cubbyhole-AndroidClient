@@ -6,6 +6,15 @@ public class ConnectionInfo {
     private String host;
     private int port;
     private String protocol;
+    private String path;
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 
     public String getProtocol() {
         return protocol;
