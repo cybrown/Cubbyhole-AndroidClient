@@ -3,9 +3,9 @@ package com.cubbyhole.client.model;
 public class File {
     private long id;
     private String name;
-    private int parent;
+    private long parent;
     private boolean isFolder;
-    private int size;
+    private long size;
 
     public long getId() {
         return id;
@@ -15,11 +15,11 @@ public class File {
         this.id = id;
     }
 
-    public int getSize() {
+    public long getSize() {
         return size;
     }
 
-    public void setSize(int size) {
+    public void setSize(long size) {
         this.size = size;
     }
 
@@ -32,11 +32,11 @@ public class File {
         this.isFolder = isFolder;
     }
 
-    public int getParent() {
+    public long getParent() {
         return parent;
     }
 
-    public void setParent(int parent) {
+    public void setParent(long parent) {
         this.parent = parent;
     }
 

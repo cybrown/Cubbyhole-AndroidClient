@@ -5,17 +5,23 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
+import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.adapter.FileListAdapter;
 import com.cubbyhole.android.cell.FileCell;
+import com.cubbyhole.android.parcelable.ParcelableFile;
 import com.cubbyhole.client.http.FileRestWebService;
 import com.cubbyhole.client.model.File;
 
@@ -23,33 +29,29 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
-import rx.Observable;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class FileListFragment extends Fragment {
 
-    @Inject
-    FileRestWebService fileService;
-
+    @Inject FileRestWebService fileService;
     private List<FileCell> fileCells = new LinkedList<FileCell>();
+    private File currentFile;
+    private FileListFragmentListener listener;
+    private File fileForMenu;
+
+    public FileListFragment(FileListFragmentListener listener) {
+        this.listener = listener;
+    }
 
     private void refreshFileList() {
-        fileService.findRoot()
+        (currentFile == null ? fileService.listRoot() : fileService.list(this.currentFile.getId()))
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(new Observer<List<File>>() {
-
-                @Override
-                public void onCompleted() {
-
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-
-                }
-
+                @Override public void onCompleted() { }
+                @Override public void onError(Throwable throwable) { }
                 @Override
                 public void onNext(final List<File> files) {
                     final ListView lstFiles = (ListView) FileListFragment.this.getView().findViewById(R.id.lstFiles);
@@ -66,6 +68,10 @@ public class FileListFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ((CubbyholeAndroidClientApp)getActivity().getApplication()).getObjectGraph().inject(this);
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            currentFile = (File)bundle.getParcelable("file");
+        }
         this.refreshFileList();
     }
 
@@ -73,9 +79,44 @@ public class FileListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_file_list, null);
-        ((ListView) view.findViewById(R.id.lstFiles))
-            .setAdapter(new FileListAdapter(this.getActivity(), this.fileCells));
+        ListView lstFiles = (ListView) view.findViewById(R.id.lstFiles);
+        lstFiles.setAdapter(new FileListAdapter(getActivity(), fileCells));
+        lstFiles.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
+        lstFiles.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                fileForMenu = fileCells.get(i).getFile();
+                return false;
+            }
+        });
+        this.registerForContextMenu(view);
         return view;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
+        getActivity().getMenuInflater().inflate(R.menu.file_list_menu, menu);
+    }
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        ContextMenu.ContextMenuInfo menuInfo = item.getMenuInfo();
+        switch (item.getItemId()) {
+            case R.id.action_delete:
+                deleteFile(fileForMenu);
+                break;
+            case R.id.action_browse:
+                openFile(fileForMenu);
+                break;
+        }
+        return super.onContextItemSelected(item);
     }
 
     @Override
@@ -92,7 +133,7 @@ public class FileListFragment extends Fragment {
                     public void onClick(DialogInterface dialogInterface, int i) {
                     File file = new File();
                     file.setName(txtName.getText().toString());
-                    file.setParent(0);
+                    file.setParent(currentFile != null ? currentFile.getId() : 0);
                     file.setFolder(true);
                     createFile(file);
                     }
@@ -106,81 +147,36 @@ public class FileListFragment extends Fragment {
                 AlertDialog dialog = builder.create();
                 dialog.show();
                 break;
-            case R.id.action_delete:
-                new AlertDialog.Builder(getActivity())
-                    .setTitle("Delete selection ?")
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            List<File> filesToDelete = getSelectedFiles();
-                            deleteFiles(filesToDelete);
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                        }
-                    })
-                    .create()
-                    .show();
-                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
         return true;
     }
 
+    private void openFile(File file) {
+        this.listener.onOpen(new ParcelableFile(file));
+    }
+
     private void createFile(File file) {
         fileService.create(file).subscribe(new Observer<Void>() {
+            @Override public void onError(Throwable throwable) { }
+            @Override public void onNext(Void aVoid) { }
             @Override
             public void onCompleted() {
                 FileListFragment.this.refreshFileList();
             }
-
-            @Override
-            public void onError(Throwable throwable) {
-
-            }
-
-            @Override
-            public void onNext(Void aVoid) {
-
-            }
         });
     }
 
-    private List<File> getSelectedFiles() {
-        List<File> filesToDelete = new LinkedList<File>();
-        for (final FileCell fileCell : this.fileCells) {
-            if (fileCell.isChecked()) {
-                filesToDelete.add(fileCell.getFile());
-            }
-        }
-        return filesToDelete;
-    }
-
-    private void deleteFiles(List<File> filesToDelete) {
-        List<Observable<Void>> obs = new LinkedList<Observable<Void>>();
-        for (final File file: filesToDelete) {
-            obs.add(this.fileService.delete(file.getId()));
-        }
-        Observable.merge(obs)
+    private void deleteFile(File file) {
+        this.fileService.delete(file.getId())
             .subscribeOn(AndroidSchedulers.mainThread())
             .subscribe(new Observer<Void>() {
+                @Override public void onError(Throwable throwable) { }
+                @Override public void onNext(Void aVoid) { }
                 @Override
                 public void onCompleted() {
                     FileListFragment.this.refreshFileList();
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-
-                }
-
-                @Override
-                public void onNext(Void aVoid) {
-
                 }
             });
     }

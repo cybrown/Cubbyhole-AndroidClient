@@ -49,13 +49,6 @@ public class FileListAdapter extends BaseAdapter {
         tvTitle.setText(this.files.get(i).getFile().getName());
         TextView tvSubtitle = (TextView) view.findViewById(R.id.tvSubtitle);
         tvSubtitle.setText(String.valueOf(this.files.get(i).getFile().getId()));
-        final CheckBox chkSelected = (CheckBox) view.findViewById(R.id.chkSelected);
-        chkSelected.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FileListAdapter.this.files.get(i).setChecked(chkSelected.isChecked());
-            }
-        });
         return view;
     }
 }

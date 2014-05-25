@@ -1,8 +1,5 @@
 package com.cubbyhole.android;
 
-import android.util.Base64;
-import android.util.Base64OutputStream;
-
 import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.fragment.FileListFragment;
 import com.cubbyhole.client.http.BasicAuthInterceptor;
@@ -19,10 +16,10 @@ import dagger.Provides;
 import retrofit.RestAdapter;
 
 @Module(
-    injects = {
-        MainActivity.class,
-        FileListFragment.class
-    }
+        injects = {
+                MainActivity.class,
+                FileListFragment.class
+        }
 )
 public class CubbyholeAndroidClientModule {
     private CubbyholeAndroidClientApp application;
@@ -37,7 +34,8 @@ public class CubbyholeAndroidClientModule {
         ConnectionInfo connectionInfo = new ConnectionInfo();
         connectionInfo.setUsername("user");
         connectionInfo.setPassword("pass");
-        connectionInfo.setHost("192.168.1.97");
+        //connectionInfo.setHost("192.168.1.97");
+        connectionInfo.setHost("37.187.46.33");
         connectionInfo.setPort(3000);
         connectionInfo.setProtocol("http");
         return connectionInfo;

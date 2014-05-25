@@ -13,7 +13,7 @@ import retrofit.http.Path;
 import rx.Observable;
 
 public interface FileRestWebService {
-    @GET("/files/") Observable<List<File>> findRoot();
+    @GET("/files/") Observable<List<File>> listRoot();
     @GET("/files/{file}") Observable<File> find(@Path("file") long file);
     @GET("/files/{file}/list") Observable<List<File>> list(@Path("file") long file);
     @PUT("/files") Observable<Void> create(@Body File file);

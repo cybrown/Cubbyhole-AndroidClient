@@ -4,21 +4,20 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.fragment.FileListFragment;
+import com.cubbyhole.android.fragment.FileListFragmentListener;
 import com.cubbyhole.android.fragment.HomeFragment;
 import com.cubbyhole.android.fragment.NavigationDrawerFragment;
-import com.cubbyhole.client.http.FileRestWebService;
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.inject.Inject;
+import com.cubbyhole.android.parcelable.ParcelableFile;
+import com.cubbyhole.client.model.File;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -33,16 +32,7 @@ public class MainActivity extends Activity
      */
     private CharSequence mTitle;
 
-    @Inject
-    public FileRestWebService fileService;
-
     private Fragment currentFragment;
-
-    private List<Class<? extends Fragment>> fragments = Arrays.asList(
-        HomeFragment.class,
-        FileListFragment.class,
-        Fragment.class
-    );
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,14 +50,34 @@ public class MainActivity extends Activity
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
+    private FileListFragmentListener mainFileListFragmentListener = new FileListFragmentListener() {
+        @Override
+        public void onOpen(ParcelableFile file) {
+            Bundle bundle = new Bundle();
+            bundle.putParcelable("file", file);
+            FileListFragment fileListFragment = new FileListFragment(mainFileListFragmentListener);
+            fileListFragment.setArguments(bundle);
+            currentFragment = fileListFragment;
+            getFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container,fileListFragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
+    };
+
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        try {
-            currentFragment = fragments.get(position).newInstance();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        switch (position) {
+            case 0:
+                currentFragment = new HomeFragment();
+                break;
+            case 1:
+                currentFragment = new FileListFragment(mainFileListFragmentListener);
+                break;
+            case 2:
+                currentFragment = new Fragment();
+                break;
         }
         getFragmentManager()
             .beginTransaction()
@@ -112,13 +122,17 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        boolean res = onOptionsItemSelected2(item);
+        Log.d("CY", "Res: " + res);
+        return res;
+    }
+
+    public boolean onOptionsItemSelected2(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 break;
             default:
-                if (!this.currentFragment.onOptionsItemSelected(item)) {
-                    return super.onOptionsItemSelected(item);
-                }
+                return super.onOptionsItemSelected(item);
         }
         return true;
     }
