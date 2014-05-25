@@ -33,6 +33,7 @@ import javax.inject.Provider;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnItemClick;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -119,6 +120,11 @@ public class FileListFragment extends Fragment {
                 break;
         }
         return super.onContextItemSelected(item);
+    }
+
+    @OnItemClick(R.id.lstFiles)
+    public void onItemClickLstFiles(AdapterView<?> adapterView, View view, int i, long l) {
+        openFile(fileCells.get(i).getFile());
     }
 
     @Override
