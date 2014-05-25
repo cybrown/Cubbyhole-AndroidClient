@@ -2,6 +2,7 @@ package com.cubbyhole.android.fragment;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -34,7 +35,7 @@ import butterknife.OnItemLongClick;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
-public class FileListFragment extends Fragment {
+public class FileListFragment extends DialogFragment {
 
     @Inject FileRestWebService fileService;
     @InjectView(R.id.lstFiles) ListView lstFiles;
