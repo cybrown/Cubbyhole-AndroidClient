@@ -188,8 +188,14 @@ public class FileListFragment extends Fragment {
                     fileService.save(file.getId(), file)
                             .subscribeOn(AndroidSchedulers.mainThread())
                             .subscribe(new Observer<Void>() {
-                                @Override public void onError(Throwable throwable) { }
-                                @Override public void onNext(Void aVoid) { }
+                                @Override
+                                public void onError(Throwable throwable) {
+                                }
+
+                                @Override
+                                public void onNext(Void aVoid) {
+                                }
+
                                 @Override
                                 public void onCompleted() {
                                     refreshFileList();
