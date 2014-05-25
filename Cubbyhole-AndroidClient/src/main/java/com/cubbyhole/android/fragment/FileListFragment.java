@@ -31,12 +31,15 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Provider;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class FileListFragment extends Fragment {
 
     @Inject FileRestWebService fileService;
+    @InjectView(R.id.lstFiles) ListView lstFiles;
     private List<FileCell> fileCells = new LinkedList<FileCell>();
     private File currentFile;
     private FileListFragmentListener listener;
@@ -54,7 +57,6 @@ public class FileListFragment extends Fragment {
                 @Override public void onError(Throwable throwable) { }
                 @Override
                 public void onNext(final List<File> files) {
-                    final ListView lstFiles = (ListView) FileListFragment.this.getView().findViewById(R.id.lstFiles);
                     FileListFragment.this.fileCells.clear();
                     for (File file: files) {
                         FileListFragment.this.fileCells.add(new FileCell(file));
@@ -79,7 +81,7 @@ public class FileListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View view = inflater.inflate(R.layout.fragment_file_list, null);
-        ListView lstFiles = (ListView) view.findViewById(R.id.lstFiles);
+        ButterKnife.inject(this, view);
         lstFiles.setAdapter(new FileListAdapter(getActivity(), fileCells));
         lstFiles.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE);
         lstFiles.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
