@@ -113,6 +113,9 @@ public class FileListFragment extends Fragment {
             case R.id.action_browse:
                 openFile(fileForMenu);
                 break;
+            case R.id.action_rename:
+                renameFile(fileForMenu);
+                break;
         }
         return super.onContextItemSelected(item);
     }
@@ -147,12 +150,7 @@ public class FileListFragment extends Fragment {
                     createFile(file);
                     }
                 });
-                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                    dialogInterface.cancel();
-                    }
-                });
+                builder.setNegativeButton("Cancel", null);
                 AlertDialog dialog = builder.create();
                 dialog.show();
                 break;
@@ -175,6 +173,33 @@ public class FileListFragment extends Fragment {
                 FileListFragment.this.refreshFileList();
             }
         });
+    }
+
+    private void renameFile(final File file) {
+        final EditText txtName = new EditText(getActivity());
+        txtName.setText(file.getName());
+        new AlertDialog.Builder(getActivity())
+            .setTitle("Rename")
+            .setView(txtName)
+            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    file.setName(txtName.getText().toString());
+                    fileService.save(file.getId(), file)
+                            .subscribeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<Void>() {
+                                @Override public void onError(Throwable throwable) { }
+                                @Override public void onNext(Void aVoid) { }
+                                @Override
+                                public void onCompleted() {
+                                    refreshFileList();
+                                }
+                            });
+                }
+            })
+            .setNegativeButton("Cancel", null)
+            .create()
+            .show();
     }
 
     private void deleteFile(File file) {
