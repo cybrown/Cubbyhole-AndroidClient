@@ -122,12 +122,6 @@ public class MainActivity extends Activity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        boolean res = onOptionsItemSelected2(item);
-        Log.d("CY", "Res: " + res);
-        return res;
-    }
-
-    public boolean onOptionsItemSelected2(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
                 break;
