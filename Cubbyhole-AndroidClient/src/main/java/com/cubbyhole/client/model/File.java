@@ -1,11 +1,31 @@
 package com.cubbyhole.client.model;
 
+import java.util.Date;
+
 public class File {
     private long id;
     private String name;
     private long parent;
     private boolean isFolder;
     private long size;
+    private Date mdate;
+    private Date cdate;
+
+    public Date getMdate() {
+        return mdate;
+    }
+
+    public void setMdate(Date mdate) {
+        this.mdate = mdate;
+    }
+
+    public Date getCdate() {
+        return cdate;
+    }
+
+    public void setCdate(Date cdate) {
+        this.cdate = cdate;
+    }
 
     public long getId() {
         return id;

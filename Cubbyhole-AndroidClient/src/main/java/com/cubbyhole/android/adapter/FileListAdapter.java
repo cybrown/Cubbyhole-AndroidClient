@@ -48,7 +48,7 @@ public class FileListAdapter extends BaseAdapter {
         TextView tvTitle = (TextView) view.findViewById(R.id.tvTitle);
         tvTitle.setText(this.files.get(i).getFile().getName());
         TextView tvSubtitle = (TextView) view.findViewById(R.id.tvSubtitle);
-        tvSubtitle.setText(String.valueOf(this.files.get(i).getFile().getId()));
+        tvSubtitle.setText(String.valueOf(this.files.get(i).getFile().getMdate()));
         return view;
     }
 }
