@@ -13,5 +13,6 @@
     <string name="action_browse">Browse</string>
     <string name="action_rename">Rename</string>
     <string name="action_move">Move</string>
+    <string name="action_logout">Logout</string>
 
 </resources>

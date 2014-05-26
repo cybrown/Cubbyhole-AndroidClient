@@ -1,5 +1,6 @@
 package com.cubbyhole.android;
 
+import com.cubbyhole.android.activity.LoginActivity;
 import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.fragment.FileListFragment;
 import com.cubbyhole.client.http.BasicAuthInterceptor;
@@ -26,7 +27,8 @@ import retrofit.converter.GsonConverter;
 @Module(
     injects = {
         MainActivity.class,
-        FileListFragment.class
+        FileListFragment.class,
+        LoginActivity.class
     }
 )
 public class CubbyholeAndroidClientModule {
@@ -40,8 +42,8 @@ public class CubbyholeAndroidClientModule {
     @Singleton
     public ConnectionInfo provideConnectionInfo() {
         ConnectionInfo connectionInfo = new ConnectionInfo();
-        connectionInfo.setUsername("user");
-        connectionInfo.setPassword("pass");
+        connectionInfo.setUsername("");
+        connectionInfo.setPassword("");
         connectionInfo.setHost("37.187.46.33");
         connectionInfo.setPort(80);
         connectionInfo.setPath("/api/v1/");

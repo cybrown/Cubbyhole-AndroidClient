@@ -123,6 +123,9 @@ public class MainActivity extends Activity
         switch (item.getItemId()) {
             case R.id.action_settings:
                 break;
+            case R.id.action_logout:
+                finish();
+                break;
             default:
                 return super.onOptionsItemSelected(item);
         }
