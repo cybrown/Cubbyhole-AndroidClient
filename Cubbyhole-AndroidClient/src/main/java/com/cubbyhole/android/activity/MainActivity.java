@@ -4,9 +4,7 @@ import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -17,7 +15,6 @@ import com.cubbyhole.android.fragment.FileListFragmentListener;
 import com.cubbyhole.android.fragment.HomeFragment;
 import com.cubbyhole.android.fragment.NavigationDrawerFragment;
 import com.cubbyhole.android.parcelable.ParcelableFile;
-import com.cubbyhole.client.model.File;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -52,7 +49,7 @@ public class MainActivity extends Activity
 
     private FileListFragmentListener mainFileListFragmentListener = new FileListFragmentListener() {
         @Override
-        public void onOpen(ParcelableFile file) {
+        public boolean onOpen(ParcelableFile file) {
             Bundle bundle = new Bundle();
             bundle.putParcelable("file", file);
             FileListFragment fileListFragment = new FileListFragment(mainFileListFragmentListener);
@@ -63,6 +60,7 @@ public class MainActivity extends Activity
                     .replace(R.id.container,fileListFragment)
                     .addToBackStack(null)
                     .commit();
+            return true;
         }
     };
 

@@ -3,7 +3,6 @@ package com.cubbyhole.android.fragment;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
-import android.app.Fragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.ContextMenu;
@@ -30,6 +29,7 @@ import javax.inject.Inject;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import butterknife.OnClick;
 import butterknife.OnItemClick;
 import butterknife.OnItemLongClick;
 import rx.Observer;
@@ -43,6 +43,8 @@ public class FileListFragment extends DialogFragment {
     private File currentFile;
     private FileListFragmentListener listener;
     private File fileForMenu;
+
+    private boolean showParentButton = true;
 
     public FileListFragment(FileListFragmentListener listener) {
         this.listener = listener;
@@ -122,6 +124,30 @@ public class FileListFragment extends DialogFragment {
     }
 
     private void moveFile(File fileForMenu) {
+        FileListFragment fragment = new FileListFragment(new FileListFragmentListener() {
+            @Override
+            public boolean onOpen(ParcelableFile file) {
+                return false;
+            }
+        });
+        fragment.show(getFragmentManager(), null);
+    }
+
+    @OnClick(R.id.btnParent)
+    public void onClickBtnParent(View view) {
+        if (currentFile != null) {
+            fileService.find(currentFile.getParent())
+                    .subscribeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<File>() {
+                        @Override public void onCompleted() { }
+                        @Override public void onError(Throwable throwable) { }
+                        @Override
+                        public void onNext(File file) {
+                            currentFile = file;
+                            refreshFileList();
+                        }
+                    });
+        }
     }
 
     @OnItemClick(R.id.lstFiles)
@@ -165,7 +191,10 @@ public class FileListFragment extends DialogFragment {
     }
 
     private void openFile(File file) {
-        this.listener.onOpen(new ParcelableFile(file));
+        if (!this.listener.onOpen(new ParcelableFile(file))) {
+            currentFile = file;
+            refreshFileList();
+        }
     }
 
     private void createFile(File file) {
