@@ -111,9 +111,6 @@ public class FileListFragment extends DialogFragment {
             case R.id.action_delete:
                 deleteFile(fileForMenu);
                 break;
-            case R.id.action_browse:
-                openFile(fileForMenu);
-                break;
             case R.id.action_rename:
                 renameFile(fileForMenu);
                 break;
