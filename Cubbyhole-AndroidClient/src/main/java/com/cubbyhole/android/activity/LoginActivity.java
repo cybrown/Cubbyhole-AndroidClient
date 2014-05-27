@@ -4,16 +4,15 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
+import com.cubbyhole.client.http.AccountRestWebService;
 import com.cubbyhole.client.http.ConnectionInfo;
-import com.cubbyhole.client.http.FileRestWebService;
-import com.cubbyhole.client.model.File;
-
-import java.util.List;
+import com.cubbyhole.client.model.Account;
 
 import javax.inject.Inject;
 
@@ -26,9 +25,10 @@ import rx.android.schedulers.AndroidSchedulers;
 public class LoginActivity extends Activity {
 
     @Inject ConnectionInfo connectionInfo;
-    @Inject FileRestWebService fileService;
+    @Inject AccountRestWebService accountService;
     @InjectView(R.id.txtUsername) EditText txtUsername;
     @InjectView(R.id.txtPassword) EditText txtPassword;
+    @InjectView(R.id.btnLogin) Button btnLogin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,14 +43,14 @@ public class LoginActivity extends Activity {
         connectionInfo.setUsername(txtUsername.getText().toString());
         connectionInfo.setPassword(txtPassword.getText().toString());
 
-        fileService.listRoot()
+        accountService.whoami()
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<File>>() {
+                .subscribe(new Observer<Account>() {
                     @Override
                     public void onCompleted() {
-                        resetForm();
+                        btnLogin.setActivated(false);
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
+                        startActivityForResult(intent, 0);
                     }
 
                     @Override
@@ -59,7 +59,7 @@ public class LoginActivity extends Activity {
                     }
 
                     @Override
-                    public void onNext(List<File> files) {
+                    public void onNext(Account account) {
 
                     }
                 });
@@ -68,7 +68,14 @@ public class LoginActivity extends Activity {
     private void resetForm() {
         txtUsername.setText("");
         txtPassword.setText("");
+        btnLogin.setActivated(true);
         txtUsername.requestFocus();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        resetForm();
     }
 
     @OnClick(R.id.btnRegister)
