@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
+import com.cubbyhole.client.CurrentAccountService;
 import com.cubbyhole.client.http.AccountRestWebService;
 import com.cubbyhole.client.http.ConnectionInfo;
 import com.cubbyhole.client.model.Account;
@@ -38,6 +39,8 @@ public class LoginActivity extends Activity {
         ((CubbyholeAndroidClientApp) getApplication()).getObjectGraph().inject(this);
     }
 
+    @Inject CurrentAccountService currentAccountService;
+
     @OnClick(R.id.btnLogin)
     protected void onClickBtnLogin(View view) {
         connectionInfo.setUsername(txtUsername.getText().toString());
@@ -60,7 +63,7 @@ public class LoginActivity extends Activity {
 
                     @Override
                     public void onNext(Account account) {
-
+                        currentAccountService.set(account);
                     }
                 });
     }

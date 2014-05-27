@@ -2,7 +2,8 @@
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="fill_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:weightSum="1">
 
     <Button
         android:id="@+id/btnParent"
@@ -11,7 +12,26 @@
         android:text="Parent"/>
     <ListView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="374dp"
         android:id="@+id/lstFiles"
-        android:layout_gravity="center_horizontal" />
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="0.70" />
+
+    <LinearLayout
+        android:id="@+id/lytDialogButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/btnPositive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OK"/>
+        <Button
+            android:id="@+id/btnNegative"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancel"/>
+        </LinearLayout>
+
 </LinearLayout>

@@ -12,13 +12,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.adapter.FileListAdapter;
 import com.cubbyhole.android.cell.FileCell;
 import com.cubbyhole.android.parcelable.ParcelableFile;
+import com.cubbyhole.client.CurrentAccountService;
 import com.cubbyhole.client.http.FileRestWebService;
 import com.cubbyhole.client.model.File;
 
@@ -38,6 +41,7 @@ import rx.android.schedulers.AndroidSchedulers;
 public class FileListFragment extends DialogFragment {
 
     @Inject FileRestWebService fileService;
+    @Inject CurrentAccountService currentAccountService;
     @InjectView(R.id.lstFiles) ListView lstFiles;
     private List<FileCell> fileCells = new LinkedList<FileCell>();
     private File currentFile;
@@ -45,26 +49,51 @@ public class FileListFragment extends DialogFragment {
     private File fileForMenu;
 
     private boolean showParentButton = true;
+    private boolean dialogButtonVisible = false;
 
     public FileListFragment(FileListFragmentListener listener) {
         this.listener = listener;
     }
 
     private void refreshFileList() {
-        (currentFile == null ? fileService.listRoot() : fileService.list(this.currentFile.getId()))
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Observer<List<File>>() {
-                @Override public void onCompleted() { }
-                @Override public void onError(Throwable throwable) { }
-                @Override
-                public void onNext(final List<File> files) {
-                    FileListFragment.this.fileCells.clear();
-                    for (File file: files) {
-                        FileListFragment.this.fileCells.add(new FileCell(file));
-                    }
-                    ((FileListAdapter) lstFiles.getAdapter()).notifyDataSetChanged();
+        final Observer<List<File>> listCurrentFileObserver = new Observer<List<File>>() {
+            @Override public void onCompleted() { }
+            @Override public void onError(Throwable throwable) { }
+            @Override
+            public void onNext(final List<File> files) {
+                FileListFragment.this.fileCells.clear();
+                for (File file: files) {
+                    FileListFragment.this.fileCells.add(new FileCell(file));
                 }
-            });
+                ((FileListAdapter) lstFiles.getAdapter()).notifyDataSetChanged();
+            }
+        };
+        if (currentFile == null) {
+            fileService.find(currentAccountService.get().getHome())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<File>() {
+                        @Override
+                        public void onCompleted() {
+                            fileService.list(currentFile.getId())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(listCurrentFileObserver);
+                        }
+
+                        @Override
+                        public void onError(Throwable throwable) {
+                            Toast.makeText(getActivity(), "Error while getting current directory", Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onNext(File file) {
+                            currentFile = file;
+                        }
+                    });
+        } else {
+            fileService.list(this.currentFile.getId())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(listCurrentFileObserver);
+        }
     }
 
     @Override
@@ -78,6 +107,8 @@ public class FileListFragment extends DialogFragment {
         this.refreshFileList();
     }
 
+    @InjectView(R.id.lytDialogButtons) LinearLayout lytDialogButtons;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -85,6 +116,7 @@ public class FileListFragment extends DialogFragment {
         ButterKnife.inject(this, view);
         lstFiles.setAdapter(new FileListAdapter(getActivity(), fileCells));
         this.registerForContextMenu(view);
+        lytDialogButtons.setVisibility(dialogButtonVisible ? View.VISIBLE : View.INVISIBLE);
         return view;
     }
 
@@ -123,13 +155,38 @@ public class FileListFragment extends DialogFragment {
         return super.onContextItemSelected(item);
     }
 
-    private void moveFile(File fileForMenu) {
+    private void moveFile(final File fileForMenu) {
         FileListFragment fragment = new FileListFragment(new FileListFragmentListener() {
             @Override
             public boolean onOpen(ParcelableFile file) {
                 return false;
             }
+
+            @Override
+            public void onSelect(FileListFragment fileListFragment, File currentFile) {
+                fileListFragment.dismiss();
+                fileForMenu.setParent(currentFile == null ? 0 : currentFile.getId());
+                fileService.save(fileForMenu.getId(),fileForMenu)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Observer<Void>() {
+                            @Override
+                            public void onCompleted() {
+                                FileListFragment.this.refreshFileList();
+                            }
+
+                            @Override
+                            public void onError(Throwable throwable) {
+                                Toast.makeText(getActivity(), "Error while moving", Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onNext(Void aVoid) {
+
+                            }
+                        });
+            }
         });
+        fragment.setDialogButtonVisible(true);
         fragment.show(getFragmentManager(), null);
     }
 
@@ -148,6 +205,16 @@ public class FileListFragment extends DialogFragment {
                         }
                     });
         }
+    }
+
+    @OnClick(R.id.btnPositive)
+    public void onClickBtnPositive(View view) {
+        listener.onSelect(this, this.currentFile);
+    }
+
+    @OnClick(R.id.btnNegative)
+    public void onClickBtnNegative(View view) {
+        this.dismiss();
     }
 
     @OnItemClick(R.id.lstFiles)
@@ -252,5 +319,13 @@ public class FileListFragment extends DialogFragment {
                     FileListFragment.this.refreshFileList();
                 }
             });
+    }
+
+    public void setDialogButtonVisible(boolean dialogButtonVisible) {
+        this.dialogButtonVisible = dialogButtonVisible;
+    }
+
+    public boolean isDialogButtonVisible() {
+        return dialogButtonVisible;
     }
 }

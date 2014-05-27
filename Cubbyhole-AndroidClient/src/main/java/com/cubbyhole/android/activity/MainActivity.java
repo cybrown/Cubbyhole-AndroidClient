@@ -15,6 +15,7 @@ import com.cubbyhole.android.fragment.FileListFragmentListener;
 import com.cubbyhole.android.fragment.HomeFragment;
 import com.cubbyhole.android.fragment.NavigationDrawerFragment;
 import com.cubbyhole.android.parcelable.ParcelableFile;
+import com.cubbyhole.client.model.File;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -61,6 +62,11 @@ public class MainActivity extends Activity
                     .addToBackStack(null)
                     .commit();
             return true;
+        }
+
+        @Override
+        public void onSelect(FileListFragment fileListFragment, File currentFile) {
+
         }
     };
 
