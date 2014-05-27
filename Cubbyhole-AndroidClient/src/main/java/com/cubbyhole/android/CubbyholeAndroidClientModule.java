@@ -3,6 +3,7 @@ package com.cubbyhole.android;
 import com.cubbyhole.android.activity.LoginActivity;
 import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.fragment.FileListFragment;
+import com.cubbyhole.client.http.AccountRestWebService;
 import com.cubbyhole.client.http.BasicAuthInterceptor;
 import com.cubbyhole.client.http.ConnectionInfo;
 import com.cubbyhole.client.http.FileRestWebService;
@@ -67,5 +68,23 @@ public class CubbyholeAndroidClientModule {
                 .setRequestInterceptor(basicAuthInterceptor)
                 .build()
                 .create(FileRestWebService.class);
+    }
+
+    @Provides
+    @Singleton
+    public AccountRestWebService provideAccountService(final BasicAuthInterceptor basicAuthInterceptor, final ConnectionInfo connectionInfo) {
+        URL url = null;
+        try {
+            url = new URL(connectionInfo.getProtocol(), connectionInfo.getHost(), connectionInfo.getPort(), connectionInfo.getPath());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
+        return new RestAdapter.Builder()
+                .setConverter(new GsonConverter(gson))
+                .setEndpoint(url.toString() + "/accounts/")
+                .setRequestInterceptor(basicAuthInterceptor)
+                .build()
+                .create(AccountRestWebService.class);
     }
 }
