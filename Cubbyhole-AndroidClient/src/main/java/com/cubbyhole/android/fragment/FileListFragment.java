@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -29,6 +30,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -42,6 +45,7 @@ public class FileListFragment extends DialogFragment {
 
     @Inject FileRestWebService fileService;
     @Inject CurrentAccountService currentAccountService;
+    @Inject @Named("baseUrl") Provider<String> baseUrl;
     @InjectView(R.id.lstFiles) ListView lstFiles;
     private List<FileCell> fileCells = new LinkedList<FileCell>();
     private File currentFile;
@@ -151,8 +155,37 @@ public class FileListFragment extends DialogFragment {
             case R.id.action_move:
                 moveFile(fileForMenu);
                 break;
+            case R.id.action_copy:
+                copyFile(fileForMenu);
+                break;
+            case R.id.action_link:
+                linkFile(fileForMenu);
         }
         return super.onContextItemSelected(item);
+    }
+
+    private void linkFile(File fileForMenu) {
+        if (fileForMenu.getPermalink() == null) {
+            fileService.createLink(fileForMenu.getId())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(new Observer<File>() {
+                        @Override  public void onCompleted() { }
+                        @Override public void onError(Throwable throwable) { }
+                        @Override
+                        public void onNext(File file) {
+                            shareLink(file);
+                        }
+                    });
+        } else {
+            shareLink(fileForMenu);
+        }
+    }
+
+    private void shareLink(File file) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/plain");
+        sharingIntent.putExtra(Intent.EXTRA_TEXT,  baseUrl.get() + file.getPermalink());
+        startActivity(sharingIntent);
     }
 
     private void moveFile(final File fileForMenu) {
@@ -323,6 +356,28 @@ public class FileListFragment extends DialogFragment {
             .setNegativeButton("Cancel", null)
             .create()
             .show();
+    }
+
+    private void copyFile(File file) {
+        file.setName(file.getName() + " - copy");
+        fileService.copy(file.getId(), file)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Void>() {
+                    @Override
+                    public void onCompleted() {
+                        refreshFileList();
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Toast.makeText(getActivity(), "Error on copy", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onNext(Void aVoid) {
+
+                    }
+                });
     }
 
     private void deleteFile(File file) {

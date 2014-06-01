@@ -10,6 +10,15 @@ public class File {
     private long size;
     private Date mdate;
     private Date cdate;
+    private String permalink;
+
+    public String getPermalink() {
+        return permalink;
+    }
+
+    public void setPermalink(String permalink) {
+        this.permalink = permalink;
+    }
 
     public Date getMdate() {
         return mdate;

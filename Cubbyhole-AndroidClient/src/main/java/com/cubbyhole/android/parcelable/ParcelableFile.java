@@ -27,6 +27,7 @@ public class ParcelableFile extends File implements Parcelable {
         boolean[] temp = new boolean[1];
         in.readBooleanArray(temp);
         setFolder(temp[0]);
+        setPermalink(in.readString());
     }
 
     @Override
@@ -41,6 +42,7 @@ public class ParcelableFile extends File implements Parcelable {
         dest.writeLong(getParent());
         dest.writeLong(getSize());
         dest.writeBooleanArray(new boolean[]{isFolder()});
+        dest.writeString(getPermalink());
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

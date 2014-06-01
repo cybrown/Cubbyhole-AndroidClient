@@ -14,5 +14,7 @@
     <string name="action_rename">Rename</string>
     <string name="action_move">Move</string>
     <string name="action_logout">Logout</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_link">Link</string>
 
 </resources>

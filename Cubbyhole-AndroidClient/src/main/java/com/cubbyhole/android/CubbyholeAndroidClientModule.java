@@ -14,6 +14,8 @@ import com.google.gson.GsonBuilder;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import dagger.Module;
@@ -68,17 +70,24 @@ public class CubbyholeAndroidClientModule {
 
     @Provides
     @Singleton
-    public AccountRestWebService provideAccountService(final BasicAuthInterceptor basicAuthInterceptor, final ConnectionInfo connectionInfo) {
+    @Named("baseUrl")
+    public String provideBaseUrl(final ConnectionInfo connectionInfo) {
         URL url = null;
         try {
             url = new URL(connectionInfo.getProtocol(), connectionInfo.getHost(), connectionInfo.getPort(), connectionInfo.getPath());
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+        return url.toString();
+    }
+
+    @Provides
+    @Singleton
+    public AccountRestWebService provideAccountService(final BasicAuthInterceptor basicAuthInterceptor, final ConnectionInfo connectionInfo, @Named("baseUrl") Provider<String> baseUrl) {
         Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
         return new RestAdapter.Builder()
                 .setConverter(new GsonConverter(gson))
-                .setEndpoint(url.toString() + "/accounts")
+                .setEndpoint(baseUrl.get() + "/accounts")
                 .setRequestInterceptor(basicAuthInterceptor)
                 .build()
                 .create(AccountRestWebService.class);
