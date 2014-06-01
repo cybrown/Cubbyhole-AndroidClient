@@ -52,17 +52,11 @@ public class CubbyholeAndroidClientModule {
 
     @Provides
     @Singleton
-    public FileRestWebService provideFileService(final BasicAuthInterceptor basicAuthInterceptor, final ConnectionInfo connectionInfo) {
-        URL url = null;
-        try {
-            url = new URL(connectionInfo.getProtocol(), connectionInfo.getHost(), connectionInfo.getPort(), connectionInfo.getPath());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+    public FileRestWebService provideFileService(final BasicAuthInterceptor basicAuthInterceptor, final ConnectionInfo connectionInfo, @Named("baseUrl") Provider<String> baseUrl) {
         Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").create();
         return new RestAdapter.Builder()
                 .setConverter(new GsonConverter(gson))
-                .setEndpoint(url.toString())
+                .setEndpoint(baseUrl.get())
                 .setRequestInterceptor(basicAuthInterceptor)
                 .build()
                 .create(FileRestWebService.class);

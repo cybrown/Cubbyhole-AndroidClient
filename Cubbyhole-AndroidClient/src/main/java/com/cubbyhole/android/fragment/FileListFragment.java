@@ -1,10 +1,14 @@
 package com.cubbyhole.android.fragment;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -38,6 +42,7 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
 import butterknife.OnItemLongClick;
+import retrofit.mime.TypedFile;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -182,10 +187,10 @@ public class FileListFragment extends DialogFragment {
     }
 
     private void shareLink(File file) {
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-        sharingIntent.putExtra(Intent.EXTRA_TEXT,  baseUrl.get() + file.getPermalink());
-        startActivity(sharingIntent);
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_TEXT, baseUrl.get() + file.getPermalink());
+        startActivity(intent);
     }
 
     private void moveFile(final File fileForMenu) {
@@ -284,16 +289,21 @@ public class FileListFragment extends DialogFragment {
 
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                    File file = new File();
-                    file.setName(txtName.getText().toString());
-                    file.setParent(currentFile != null ? currentFile.getId() : 0);
-                    file.setFolder(true);
-                    createFile(file);
+                        File file = new File();
+                        file.setName(txtName.getText().toString());
+                        file.setParent(currentFile != null ? currentFile.getId() : 0);
+                        file.setFolder(true);
+                        createFile(file);
                     }
                 });
                 builder.setNegativeButton("Cancel", null);
                 AlertDialog dialog = builder.create();
                 dialog.show();
+                break;
+            case R.id.action_upload:
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("file/*");
+                startActivityForResult(intent, ACTIVITY_RETURN_FILECHOOSER);
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -315,9 +325,9 @@ public class FileListFragment extends DialogFragment {
     }
 
     private void createFile(File file) {
-        fileService.create(file).subscribe(new Observer<Void>() {
+        fileService.create(file).subscribe(new Observer<File>() {
             @Override public void onError(Throwable throwable) { }
-            @Override public void onNext(Void aVoid) { }
+            @Override public void onNext(File file) { }
             @Override
             public void onCompleted() {
                 FileListFragment.this.refreshFileList();
@@ -329,33 +339,93 @@ public class FileListFragment extends DialogFragment {
         final EditText txtName = new EditText(getActivity());
         txtName.setText(file.getName());
         new AlertDialog.Builder(getActivity())
-            .setTitle("Rename")
-            .setView(txtName)
-            .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    file.setName(txtName.getText().toString());
-                    fileService.save(file.getId(), file)
-                            .subscribeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Observer<Void>() {
-                                @Override
-                                public void onError(Throwable throwable) {
-                                }
+                .setTitle("Rename")
+                .setView(txtName)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        file.setName(txtName.getText().toString());
+                        fileService.save(file.getId(), file)
+                                .subscribeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Observer<Void>() {
+                                    @Override public void onError(Throwable throwable) { }
+                                    @Override public void onNext(Void aVoid) { }
+                                    @Override
+                                    public void onCompleted() {
+                                        refreshFileList();
+                                    }
+                                });
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .create()
+                .show();
+    }
 
-                                @Override
-                                public void onNext(Void aVoid) {
-                                }
+    private static final int ACTIVITY_RETURN_FILECHOOSER = 2354;
 
+    public static String getPath(Context context, Uri uri) {
+        if ("content".equalsIgnoreCase(uri.getScheme())) {
+            String[] projection = { "_data" };
+            Cursor cursor = null;
+
+            try {
+                cursor = context.getContentResolver().query(uri, projection, null, null, null);
+                int column_index = cursor.getColumnIndexOrThrow("_data");
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(column_index);
+                }
+            } catch (Exception e) {
+                // Eat it
+            }
+        }
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case ACTIVITY_RETURN_FILECHOOSER:
+                if (resultCode == Activity.RESULT_OK) {
+                    Uri uri = data.getData();
+                    String filePath = getPath(getActivity(), uri);
+                    final java.io.File file = new java.io.File(filePath);
+                    File file2 = new File();
+                    file2.setFolder(false);
+                    file2.setName(file.getName());
+                    file2.setParent(currentFile != null ? currentFile.getId() : 0);
+                    fileService.create(file2)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<File>() {
+                                @Override public void onCompleted() { }
+                                @Override public void onError(Throwable throwable) { }
                                 @Override
-                                public void onCompleted() {
-                                    refreshFileList();
+                                public void onNext(File fileArg) {
+                                    try {
+                                        fileService.write(fileArg.getId(), new TypedFile("application/octet-stream", file))
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(new Observer<Void>() {
+                                                    @Override public void onError(Throwable throwable) { }
+                                                    @Override public void onNext(Void aVoid) { }
+                                                    @Override public void onCompleted() {
+                                                        refreshFileList();
+                                                    }
+                                                });
+                                    } catch (Throwable t) {
+
+                                    }
                                 }
                             });
                 }
-            })
-            .setNegativeButton("Cancel", null)
-            .create()
-            .show();
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
     }
 
     private void copyFile(File file) {
@@ -363,6 +433,7 @@ public class FileListFragment extends DialogFragment {
         fileService.copy(file.getId(), file)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Void>() {
+                    @Override public void onNext(Void aVoid) { }
                     @Override
                     public void onCompleted() {
                         refreshFileList();
@@ -372,25 +443,20 @@ public class FileListFragment extends DialogFragment {
                     public void onError(Throwable throwable) {
                         Toast.makeText(getActivity(), "Error on copy", Toast.LENGTH_LONG).show();
                     }
-
-                    @Override
-                    public void onNext(Void aVoid) {
-
-                    }
                 });
     }
 
     private void deleteFile(File file) {
         this.fileService.delete(file.getId())
-            .subscribeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Observer<Void>() {
-                @Override public void onError(Throwable throwable) { }
-                @Override public void onNext(Void aVoid) { }
-                @Override
-                public void onCompleted() {
-                    FileListFragment.this.refreshFileList();
-                }
-            });
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Void>() {
+                    @Override public void onError(Throwable throwable) { }
+                    @Override public void onNext(Void aVoid) { }
+                    @Override
+                    public void onCompleted() {
+                        FileListFragment.this.refreshFileList();
+                    }
+                });
     }
 
     public void setDialogButtonVisible(boolean dialogButtonVisible) {

@@ -53,7 +53,7 @@ public class LoginActivity extends Activity {
                     public void onCompleted() {
                         btnLogin.setActivated(false);
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivityForResult(intent, 0);
+                        startActivityForResult(intent, 1);
                     }
 
                     @Override
@@ -77,8 +77,13 @@ public class LoginActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        resetForm();
+        switch (requestCode) {
+            case 1:
+                resetForm();
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @OnClick(R.id.btnRegister)
