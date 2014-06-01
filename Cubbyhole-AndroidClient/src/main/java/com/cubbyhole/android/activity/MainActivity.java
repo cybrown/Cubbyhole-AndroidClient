@@ -50,7 +50,7 @@ public class MainActivity extends Activity
 
     private FileListFragmentListener mainFileListFragmentListener = new FileListFragmentListener() {
         @Override
-        public boolean onOpen(ParcelableFile file) {
+        public boolean onOpenFolder(ParcelableFile file) {
             Bundle bundle = new Bundle();
             bundle.putParcelable("file", file);
             FileListFragment fileListFragment = new FileListFragment(mainFileListFragmentListener);
@@ -58,9 +58,14 @@ public class MainActivity extends Activity
             currentFragment = fileListFragment;
             getFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.container,fileListFragment)
+                    .replace(R.id.container, fileListFragment)
                     .addToBackStack(null)
                     .commit();
+            return true;
+        }
+
+        @Override
+        public boolean onOpenFile(ParcelableFile file) {
             return true;
         }
 

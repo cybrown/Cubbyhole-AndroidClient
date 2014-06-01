@@ -5,6 +5,7 @@ import com.cubbyhole.client.model.File;
 
 public interface FileListFragmentListener {
 
-    boolean onOpen(ParcelableFile file);
+    boolean onOpenFolder(ParcelableFile file);
+    boolean onOpenFile(ParcelableFile file);
     void onSelect(FileListFragment fileListFragment, File currentFile);
 }

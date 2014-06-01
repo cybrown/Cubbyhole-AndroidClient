@@ -158,7 +158,12 @@ public class FileListFragment extends DialogFragment {
     private void moveFile(final File fileForMenu) {
         FileListFragment fragment = new FileListFragment(new FileListFragmentListener() {
             @Override
-            public boolean onOpen(ParcelableFile file) {
+            public boolean onOpenFolder(ParcelableFile file) {
+                return false;
+            }
+
+            @Override
+            public boolean onOpenFile(ParcelableFile file) {
                 return false;
             }
 
@@ -219,7 +224,13 @@ public class FileListFragment extends DialogFragment {
 
     @OnItemClick(R.id.lstFiles)
     public void onItemClickLstFiles(AdapterView<?> adapterView, View view, int i, long l) {
-        openFile(fileCells.get(i).getFile());
+        File file = fileCells.get(i).getFile();
+        if (file.isFolder()) {
+            openFolder(fileCells.get(i).getFile());
+        } else {
+            openFile(fileCells.get(i).getFile());
+        }
+
     }
 
     @OnItemLongClick(R.id.lstFiles)
@@ -257,10 +268,16 @@ public class FileListFragment extends DialogFragment {
         return true;
     }
 
-    private void openFile(File file) {
-        if (!this.listener.onOpen(new ParcelableFile(file))) {
+    private void openFolder(File file) {
+        if (!this.listener.onOpenFolder(new ParcelableFile(file))) {
             currentFile = file;
             refreshFileList();
+        }
+    }
+
+    private void openFile(File file) {
+        if (!this.listener.onOpenFile(new ParcelableFile(file))) {
+            Toast.makeText(getActivity(), "Can not open file", Toast.LENGTH_LONG).show();
         }
     }
 
