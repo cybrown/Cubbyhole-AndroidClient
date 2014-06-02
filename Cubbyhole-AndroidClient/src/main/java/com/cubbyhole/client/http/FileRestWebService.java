@@ -10,7 +10,7 @@ import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.PUT;
 import retrofit.http.Path;
-import retrofit.mime.TypedFile;
+import retrofit.mime.TypedOutput;
 import rx.Observable;
 
 public interface FileRestWebService {
@@ -22,5 +22,5 @@ public interface FileRestWebService {
     @POST("/files/{file}") Observable<Void> save(@Path("file") long fileId, @Body File file);
     @POST("/files/{file}/link") Observable<File> createLink(@Path("file") long fileId);
     @DELETE("/files/{file}") Observable<Void> delete(@Path("file") long fileId);
-    @PUT("/files/{file}/raw") Observable<Void> write(@Path("file") long fileId, @Body TypedFile data);
+    @PUT("/files/{file}/raw") Observable<Void> write(@Path("file") long fileId, @Body TypedOutput data);
 }

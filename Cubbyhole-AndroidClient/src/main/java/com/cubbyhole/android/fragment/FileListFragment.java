@@ -10,11 +10,13 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -30,6 +32,10 @@ import com.cubbyhole.client.CurrentAccountService;
 import com.cubbyhole.client.http.FileRestWebService;
 import com.cubbyhole.client.model.File;
 
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -42,7 +48,7 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import butterknife.OnItemClick;
 import butterknife.OnItemLongClick;
-import retrofit.mime.TypedFile;
+import retrofit.mime.TypedByteArray;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 
@@ -387,44 +393,85 @@ public class FileListFragment extends DialogFragment {
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case ACTIVITY_RETURN_FILECHOOSER:
-                if (resultCode == Activity.RESULT_OK) {
-                    Uri uri = data.getData();
-                    String filePath = getPath(getActivity(), uri);
-                    final java.io.File file = new java.io.File(filePath);
-                    File file2 = new File();
-                    file2.setFolder(false);
-                    file2.setName(file.getName());
-                    file2.setParent(currentFile != null ? currentFile.getId() : 0);
-                    fileService.create(file2)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(new Observer<File>() {
-                                @Override public void onCompleted() { }
-                                @Override public void onError(Throwable throwable) { }
-                                @Override
-                                public void onNext(File fileArg) {
-                                    try {
-                                        fileService.write(fileArg.getId(), new TypedFile("application/octet-stream", file))
-                                                .observeOn(AndroidSchedulers.mainThread())
-                                                .subscribe(new Observer<Void>() {
-                                                    @Override public void onError(Throwable throwable) { }
-                                                    @Override public void onNext(Void aVoid) { }
-                                                    @Override public void onCompleted() {
-                                                        refreshFileList();
-                                                    }
-                                                });
-                                    } catch (Throwable t) {
-
-                                    }
+    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        try {
+            switch (requestCode) {
+                case ACTIVITY_RETURN_FILECHOOSER:
+                    if (resultCode == Activity.RESULT_OK) {
+                        Uri uri = intent.getData();
+                        final InputStream is = getActivity().getContentResolver().openInputStream(uri);
+                        String filename = "no name";
+                        Cursor metaCursor = getActivity().getContentResolver().query(uri, new String[]{MediaStore.MediaColumns.DISPLAY_NAME}, null, null, null);
+                        if (metaCursor != null) {
+                            try {
+                                if (metaCursor.moveToFirst()) {
+                                    filename = metaCursor.getString(0);
                                 }
-                            });
-                }
-                break;
-            default:
-                super.onActivityResult(requestCode, resultCode, data);
-                break;
+                            } finally {
+                                metaCursor.close();
+                            }
+                        }
+                        File file = new File();
+                        file.setFolder(false);
+                        file.setName(filename);
+                        file.setParent(currentFile != null ? currentFile.getId() : 0);
+                        String extension = null;
+                        if (file.getName().contains(".")) {
+                            extension = file.getName().substring(file.getName().indexOf('.') + 1);
+                        }
+                        final String mimetype = extension != null ? MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) : "application/octet-stream";
+                        final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                        int nRead;
+                        byte[] buffer2 = new byte[16384];
+                        while ((nRead = is.read(buffer2, 0, buffer2.length)) != -1) {
+                            buffer.write(buffer2, 0, nRead);
+                        }
+                        buffer.flush();
+                        fileService.create(file)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Observer<File>() {
+                                    @Override
+                                    public void onCompleted() {
+                                    }
+
+                                    @Override
+                                    public void onError(Throwable throwable) {
+                                    }
+
+                                    @Override
+                                    public void onNext(File fileArg) {
+                                        try {
+                                            fileService.write(fileArg.getId(), new TypedByteArray(mimetype, buffer.toByteArray()))
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe(new Observer<Void>() {
+                                                        @Override
+                                                        public void onError(Throwable throwable) {
+                                                        }
+
+                                                        @Override
+                                                        public void onNext(Void aVoid) {
+                                                        }
+
+                                                        @Override
+                                                        public void onCompleted() {
+                                                            refreshFileList();
+                                                        }
+                                                    });
+                                        } catch (Throwable t) {
+
+                                        }
+                                    }
+                                });
+                    }
+                    break;
+                default:
+                    super.onActivityResult(requestCode, resultCode, intent);
+                    break;
+            }
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
