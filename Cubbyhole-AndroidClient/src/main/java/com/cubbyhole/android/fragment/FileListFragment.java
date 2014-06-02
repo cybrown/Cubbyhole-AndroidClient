@@ -189,7 +189,7 @@ public class FileListFragment extends DialogFragment {
     private void shareLink(File file) {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_TEXT, baseUrl.get() + file.getPermalink());
+        intent.putExtra(Intent.EXTRA_TEXT, baseUrl.get() + "f/" + file.getPermalink());
         startActivity(intent);
     }
 
