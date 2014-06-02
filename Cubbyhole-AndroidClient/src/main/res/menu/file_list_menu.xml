@@ -8,6 +8,8 @@
         android:title="@string/action_copy" />
     <item android:id="@+id/action_link"
         android:title="@string/action_link" />
+    <item android:id="@+id/action_manage_share"
+        android:title="@string/action_manage_share" />
     <item android:id="@+id/action_delete"
         android:title="@string/action_delete" />
 </menu>

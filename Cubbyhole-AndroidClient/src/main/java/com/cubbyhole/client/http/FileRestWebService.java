@@ -1,11 +1,14 @@
 package com.cubbyhole.client.http;
 
 import com.cubbyhole.client.model.File;
+import com.cubbyhole.client.model.Share;
 
 import java.util.List;
 
 import retrofit.http.Body;
 import retrofit.http.DELETE;
+import retrofit.http.Field;
+import retrofit.http.FormUrlEncoded;
 import retrofit.http.GET;
 import retrofit.http.POST;
 import retrofit.http.PUT;
@@ -23,4 +26,7 @@ public interface FileRestWebService {
     @POST("/files/{file}/link") Observable<File> createLink(@Path("file") long fileId);
     @DELETE("/files/{file}") Observable<Void> delete(@Path("file") long fileId);
     @PUT("/files/{file}/raw") Observable<Void> write(@Path("file") long fileId, @Body TypedOutput data);
+    @PUT("/files/{file}/shares/{perm}") @FormUrlEncoded Observable<Void> addPermission(@Path("file") long fileId, @Path("perm") String perm, @Field("account") long account);
+    @GET("/files/{file}/shares") Observable<List<Share>> getPermissions(@Path("file") long fileId);
+    @DELETE("/files/{file}/shares/{perm}") @FormUrlEncoded Observable<Void> removePermission(@Path("file") long fileId, @Path("perm") String perm, @Field("account") long account);
 }

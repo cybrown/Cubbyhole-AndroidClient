@@ -2,6 +2,7 @@ package com.cubbyhole.android;
 
 import com.cubbyhole.android.activity.LoginActivity;
 import com.cubbyhole.android.activity.MainActivity;
+import com.cubbyhole.android.activity.PermissionActivity;
 import com.cubbyhole.android.fragment.FileListFragment;
 import com.cubbyhole.client.CurrentAccountService;
 import com.cubbyhole.client.http.AccountRestWebService;
@@ -27,7 +28,8 @@ import retrofit.converter.GsonConverter;
     injects = {
         MainActivity.class,
         FileListFragment.class,
-        LoginActivity.class
+        LoginActivity.class,
+        PermissionActivity.class
     }
 )
 public class CubbyholeAndroidClientModule {

@@ -17,6 +17,10 @@
             android:label="@string/app_name" >
         </activity>
         <activity
+            android:name=".activity.PermissionActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
             android:name=".activity.LoginActivity"
             android:label="@string/app_name" >
             <intent-filter>

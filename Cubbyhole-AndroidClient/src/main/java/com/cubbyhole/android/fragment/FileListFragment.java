@@ -25,6 +25,7 @@ import android.widget.Toast;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
+import com.cubbyhole.android.activity.PermissionActivity;
 import com.cubbyhole.android.adapter.FileListAdapter;
 import com.cubbyhole.android.cell.FileCell;
 import com.cubbyhole.android.parcelable.ParcelableFile;
@@ -171,8 +172,16 @@ public class FileListFragment extends DialogFragment {
                 break;
             case R.id.action_link:
                 linkFile(fileForMenu);
+            case R.id.action_manage_share:
+                manageShare(fileForMenu);
         }
         return super.onContextItemSelected(item);
+    }
+
+    private void manageShare(File fileForMenu) {
+        Intent intent = new Intent(getActivity(), PermissionActivity.class);
+        intent.putExtra("fileId", fileForMenu.getId());
+        startActivity(intent);
     }
 
     private void linkFile(File fileForMenu) {
