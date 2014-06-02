@@ -302,7 +302,7 @@ public class FileListFragment extends DialogFragment {
                 break;
             case R.id.action_upload:
                 Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("file/*");
+                intent.setType("*/*");
                 startActivityForResult(intent, ACTIVITY_RETURN_FILECHOOSER);
                 break;
             default:
