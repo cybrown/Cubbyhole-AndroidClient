@@ -1,55 +1,32 @@
 package com.cubbyhole.android.adapter;
 
 import android.content.Context;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.CheckBox;
 import android.widget.TextView;
 
 import com.cubbyhole.android.R;
-import com.cubbyhole.android.cell.FileCell;
-import com.cubbyhole.android.cell.ShareCell;
-import com.cubbyhole.android.fragment.FileListFragment;
-import com.cubbyhole.client.model.File;
+import com.cubbyhole.android.util.CellWrapper;
+import com.cubbyhole.android.util.GenericListAdapter;
+import com.cubbyhole.client.model.Share;
 
 import java.util.List;
 
 
-public class ShareListAdapter extends BaseAdapter {
+public class ShareListAdapter extends GenericListAdapter<Share> {
 
-    private final Context context;
-    private final List<ShareCell> shares;
-
-    public ShareListAdapter(Context context, List<ShareCell> shares) {
-        this.context = context;
-        this.shares = shares;
+    public ShareListAdapter(Context context, List<CellWrapper<Share>> objects) {
+        super(context, objects, R.layout.cell_share);
     }
 
     @Override
-    public int getCount() {
-        return this.shares.size();
+    protected long getId(Share object) {
+        return object.getId();
     }
 
     @Override
-    public Object getItem(int i) {
-        return this.shares.get(i);
+    protected void getView(Share object, View view) {
+        ((TextView) view.findViewById(R.id.tvPermission)).setText(object.getPermission());
+        ((TextView) view.findViewById(R.id.tvAccount)).setText(String.valueOf(object.getAccount()));
     }
 
-    @Override
-    public long getItemId(int i) {
-        return this.shares.get(i).getShare().getId();
-    }
-
-    @Override
-    public View getView(final int i, View arg1, ViewGroup viewGroup) {
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.cell_share, null);
-        TextView tvPermission = (TextView) view.findViewById(R.id.tvPermission);
-        TextView tvAccount = (TextView) view.findViewById(R.id.tvAccount);
-        tvPermission.setText(this.shares.get(i).getShare().getPermission());
-        tvAccount.setText(String.valueOf(this.shares.get(i).getShare().getAccount()));
-        return view;
-    }
 }

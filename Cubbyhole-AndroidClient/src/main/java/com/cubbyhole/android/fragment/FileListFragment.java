@@ -27,7 +27,7 @@ import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.activity.PermissionActivity;
 import com.cubbyhole.android.adapter.FileListAdapter;
-import com.cubbyhole.android.cell.FileCell;
+import com.cubbyhole.android.util.CellWrapper;
 import com.cubbyhole.android.parcelable.ParcelableFile;
 import com.cubbyhole.client.CurrentAccountService;
 import com.cubbyhole.client.http.FileRestWebService;
@@ -59,7 +59,7 @@ public class FileListFragment extends DialogFragment {
     @Inject CurrentAccountService currentAccountService;
     @Inject @Named("baseUrl") Provider<String> baseUrl;
     @InjectView(R.id.lstFiles) ListView lstFiles;
-    private List<FileCell> fileCells = new LinkedList<FileCell>();
+    private List<CellWrapper<File>> fileCells = new LinkedList<CellWrapper<File>>();
     private File currentFile;
     private FileListFragmentListener listener;
     private File fileForMenu;
@@ -79,7 +79,7 @@ public class FileListFragment extends DialogFragment {
             public void onNext(final List<File> files) {
                 FileListFragment.this.fileCells.clear();
                 for (File file: files) {
-                    FileListFragment.this.fileCells.add(new FileCell(file));
+                    FileListFragment.this.fileCells.add(new CellWrapper<File>(file));
                 }
                 ((FileListAdapter) lstFiles.getAdapter()).notifyDataSetChanged();
             }
@@ -277,18 +277,18 @@ public class FileListFragment extends DialogFragment {
 
     @OnItemClick(R.id.lstFiles)
     public void onItemClickLstFiles(AdapterView<?> adapterView, View view, int i, long l) {
-        File file = fileCells.get(i).getFile();
+        File file = fileCells.get(i).get();
         if (file.isFolder()) {
-            openFolder(fileCells.get(i).getFile());
+            openFolder(fileCells.get(i).get());
         } else {
-            openFile(fileCells.get(i).getFile());
+            openFile(fileCells.get(i).get());
         }
 
     }
 
     @OnItemLongClick(R.id.lstFiles)
     public boolean onItemLongClickLstFiles(AdapterView<?> adapterView, View view, int i, long l) {
-        fileForMenu = fileCells.get(i).getFile();
+        fileForMenu = fileCells.get(i).get();
         return false;
     }
 

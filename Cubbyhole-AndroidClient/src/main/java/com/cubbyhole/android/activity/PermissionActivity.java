@@ -11,7 +11,7 @@ import android.widget.ListView;
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.adapter.ShareListAdapter;
-import com.cubbyhole.android.cell.ShareCell;
+import com.cubbyhole.android.util.CellWrapper;
 import com.cubbyhole.client.http.FileRestWebService;
 import com.cubbyhole.client.model.Share;
 
@@ -31,7 +31,7 @@ public class PermissionActivity extends Activity {
     @Inject FileRestWebService fileService;
     @InjectView(R.id.lstShares) ListView lstShares;
     private long fileId;
-    private List<ShareCell> shareCells = new ArrayList<ShareCell>();
+    private List<CellWrapper<Share>> shareCells = new ArrayList<CellWrapper<Share>>();
 
     private void refreshList() {
         ((ShareListAdapter) lstShares.getAdapter()).notifyDataSetChanged();
@@ -66,7 +66,7 @@ public class PermissionActivity extends Activity {
                     public void onNext(List<Share> shares) {
                         shareCells.clear();
                         for (Share share: shares) {
-                            shareCells.add(new ShareCell(share));
+                            shareCells.add(new CellWrapper<Share>(share));
                         }
                         refreshList();
                     }
