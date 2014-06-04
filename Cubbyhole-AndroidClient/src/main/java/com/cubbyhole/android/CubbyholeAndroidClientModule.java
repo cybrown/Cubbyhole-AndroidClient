@@ -1,5 +1,9 @@
 package com.cubbyhole.android;
 
+import android.app.DownloadManager;
+import android.content.Context;
+import android.os.Environment;
+
 import com.cubbyhole.android.activity.LoginActivity;
 import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.activity.PermissionActivity;
@@ -12,6 +16,7 @@ import com.cubbyhole.client.http.FileRestWebService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -50,6 +55,17 @@ public class CubbyholeAndroidClientModule {
         connectionInfo.setPath("/api/v1/");
         connectionInfo.setProtocol("http");
         return connectionInfo;
+    }
+
+    @Provides
+    @Named("RootFile")
+    public java.io.File provideRootDir() {
+        return new java.io.File(Environment.getExternalStorageDirectory().getPath() + "/cubbyhole");
+    };
+
+    @Provides
+    public DownloadManager provideDownloadService() {
+        return (DownloadManager) application.getApplicationContext().getSystemService(Context.DOWNLOAD_SERVICE);
     }
 
     @Provides

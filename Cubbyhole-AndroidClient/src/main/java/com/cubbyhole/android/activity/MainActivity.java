@@ -2,7 +2,9 @@ package com.cubbyhole.android.activity;
 
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.DownloadManager;
 import android.app.Fragment;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
@@ -15,7 +17,15 @@ import com.cubbyhole.android.fragment.FileListFragmentListener;
 import com.cubbyhole.android.fragment.HomeFragment;
 import com.cubbyhole.android.fragment.NavigationDrawerFragment;
 import com.cubbyhole.android.parcelable.ParcelableFile;
+import com.cubbyhole.client.http.BasicAuthInterceptor;
+import com.cubbyhole.client.http.ConnectionInfo;
 import com.cubbyhole.client.model.File;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.inject.Provider;
+
+import retrofit.RequestInterceptor;
 
 public class MainActivity extends Activity
         implements NavigationDrawerFragment.NavigationDrawerCallbacks {
@@ -31,6 +41,11 @@ public class MainActivity extends Activity
     private CharSequence mTitle;
 
     private Fragment currentFragment;
+
+    @Inject @Named("RootFile") java.io.File rootFile;
+    @Inject DownloadManager downloadManager;
+    @Inject ConnectionInfo connectionInfo;
+    @Inject @Named("baseUrl") Provider<String> baseUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +81,42 @@ public class MainActivity extends Activity
 
         @Override
         public boolean onOpenFile(ParcelableFile file) {
+            Uri uri = Uri.parse(baseUrl.get() + "files/" + file.getId() + "/raw");
+            final DownloadManager.Request request = new DownloadManager.Request(uri);
+            new BasicAuthInterceptor(connectionInfo).intercept(new RequestInterceptor.RequestFacade() {
+                @Override
+                public void addHeader(String s, String s2) {
+                    request.addRequestHeader(s, s2);
+                }
+
+                @Override
+                public void addPathParam(String s, String s2) {
+
+                }
+
+                @Override
+                public void addEncodedPathParam(String s, String s2) {
+
+                }
+
+                @Override
+                public void addQueryParam(String s, String s2) {
+
+                }
+
+                @Override
+                public void addEncodedQueryParam(String s, String s2) {
+
+                }
+            });
+            request.setTitle(file.getName());
+            request.setDescription("File download");
+            request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            request.setMimeType(file.getMimetype());
+            request.allowScanningByMediaScanner();
+            java.io.File destination = new java.io.File(rootFile.getPath() + "/" + file.getName());
+            request.setDestinationUri(Uri.parse("file://" + destination.getPath()));
+            downloadManager.enqueue(request);
             return true;
         }
 

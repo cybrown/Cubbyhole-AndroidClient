@@ -17,6 +17,9 @@ public class ParcelableFile extends File implements Parcelable {
         setFolder(file.isFolder());
         setParent(file.getParent());
         setSize(file.getSize());
+        setFolder(file.isFolder());
+        setPermalink(file.getPermalink());
+        setMimetype(file.getMimetype());
     }
 
     public ParcelableFile(Parcel in) {
@@ -28,6 +31,7 @@ public class ParcelableFile extends File implements Parcelable {
         in.readBooleanArray(temp);
         setFolder(temp[0]);
         setPermalink(in.readString());
+        setMimetype(in.readString());
     }
 
     @Override
@@ -43,6 +47,7 @@ public class ParcelableFile extends File implements Parcelable {
         dest.writeLong(getSize());
         dest.writeBooleanArray(new boolean[]{isFolder()});
         dest.writeString(getPermalink());
+        dest.writeString(getMimetype());
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

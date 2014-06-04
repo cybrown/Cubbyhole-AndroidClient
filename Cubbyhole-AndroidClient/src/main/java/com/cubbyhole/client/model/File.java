@@ -11,6 +11,15 @@ public class File {
     private Date mdate;
     private Date cdate;
     private String permalink;
+    private String mimetype;
+
+    public String getMimetype() {
+        return mimetype;
+    }
+
+    public void setMimetype(String mimetype) {
+        this.mimetype = mimetype;
+    }
 
     public String getPermalink() {
         return permalink;
