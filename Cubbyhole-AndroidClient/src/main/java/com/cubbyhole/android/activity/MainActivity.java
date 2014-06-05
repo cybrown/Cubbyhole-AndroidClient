@@ -6,6 +6,7 @@ import android.app.DownloadManager;
 import android.app.Fragment;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.widget.DrawerLayout;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -116,6 +117,10 @@ public class MainActivity extends Activity
             request.allowScanningByMediaScanner();
             java.io.File destination = new java.io.File(rootFile.getPath() + "/" + file.getName());
             request.setDestinationUri(Uri.parse("file://" + destination.getPath()));
+            final java.io.File cubbyholeDir = new java.io.File(Environment.getExternalStorageDirectory().getPath() + "/cubbyhole");
+            if (!cubbyholeDir.exists()) {
+                cubbyholeDir.mkdirs();
+            }
             downloadManager.enqueue(request);
             return true;
         }
