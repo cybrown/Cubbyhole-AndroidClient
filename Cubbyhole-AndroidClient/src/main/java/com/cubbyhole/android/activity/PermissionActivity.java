@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ListView;
 
@@ -12,7 +15,9 @@ import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.adapter.ShareListAdapter;
 import com.cubbyhole.android.util.CellWrapper;
+import com.cubbyhole.client.http.AccountRestWebService;
 import com.cubbyhole.client.http.FileRestWebService;
+import com.cubbyhole.client.model.PartialAccount;
 import com.cubbyhole.client.model.Share;
 
 import java.util.ArrayList;
@@ -73,22 +78,56 @@ public class PermissionActivity extends Activity {
                 });
     }
 
+    @Inject
+    AccountRestWebService accountService;
+
     @OnClick(R.id.btnAddPerm)
     public void onClickBtnAddPerm(View view) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_perm, null);
         final EditText txtPerm = (EditText) dialogView.findViewById(R.id.txtPerm);
-        final EditText txtAccount = (EditText) dialogView.findViewById(R.id.txtAccount);
+        final AutoCompleteTextView txtAccount = (AutoCompleteTextView) dialogView.findViewById(R.id.txtAccount);
+        txtAccount.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View view, int i, KeyEvent keyEvent) {
+                String begin = txtAccount.getText().toString();
+                if (begin.length() != 0) {
+                    accountService.findStartsWith(begin)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Observer<List<PartialAccount>>() {
+                                @Override
+                                public void onCompleted() {
+                            }
+
+                                @Override
+                                public void onError(Throwable throwable) {
+
+                                }
+
+                                @Override
+                                public void onNext(List<PartialAccount> partialAccounts) {
+                                    List<String> usernames = new ArrayList<String>();
+                                    for (PartialAccount account : partialAccounts) {
+                                        usernames.add(account.getUsername());
+                                    }
+                                    txtAccount.setAdapter(new ArrayAdapter<String>(PermissionActivity.this, android.R.layout.simple_dropdown_item_1line, usernames));
+                                }
+                            });
+                }
+                return false;
+            }
+        });
         new AlertDialog.Builder(this)
                 .setTitle("Add permission")
                 .setView(dialogView)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        fileService.addPermission(fileId, txtPerm.getText().toString(), Long.parseLong(txtAccount.getText().toString()))
+                        accountService.findByUsername(txtAccount.getText().toString())
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(new Observer<Void>() {
+                                .subscribe(new Observer<PartialAccount>() {
                                     @Override
                                     public void onCompleted() {
+
                                     }
 
                                     @Override
@@ -97,8 +136,24 @@ public class PermissionActivity extends Activity {
                                     }
 
                                     @Override
-                                    public void onNext(Void aVoid) {
+                                    public void onNext(PartialAccount partialAccount) {
+                                        fileService.addPermission(fileId, txtPerm.getText().toString(), partialAccount.getId())
+                                                .observeOn(AndroidSchedulers.mainThread())
+                                                .subscribe(new Observer<Void>() {
+                                                    @Override
+                                                    public void onCompleted() {
+                                                    }
 
+                                                    @Override
+                                                    public void onError(Throwable throwable) {
+
+                                                    }
+
+                                                    @Override
+                                                    public void onNext(Void aVoid) {
+
+                                                    }
+                                                });
                                     }
                                 });
                     }
