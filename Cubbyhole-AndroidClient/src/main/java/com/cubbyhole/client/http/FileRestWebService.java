@@ -18,6 +18,7 @@ import rx.Observable;
 
 public interface FileRestWebService {
     @GET("/files/") Observable<List<File>> listRoot();
+    @GET("/files/shared") Observable<List<File>> listShared();
     @GET("/files/{file}") Observable<File> find(@Path("file") long fileId);
     @GET("/files/{file}/list") Observable<List<File>> list(@Path("file") long fileId);
     @PUT("/files") Observable<File> create(@Body File file);

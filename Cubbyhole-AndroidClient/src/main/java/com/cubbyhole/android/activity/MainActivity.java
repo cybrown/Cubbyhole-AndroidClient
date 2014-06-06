@@ -17,6 +17,7 @@ import com.cubbyhole.android.fragment.FileListFragment;
 import com.cubbyhole.android.fragment.FileListFragmentListener;
 import com.cubbyhole.android.fragment.HomeFragment;
 import com.cubbyhole.android.fragment.NavigationDrawerFragment;
+import com.cubbyhole.android.fragment.SharedFileListFragment;
 import com.cubbyhole.android.parcelable.ParcelableFile;
 import com.cubbyhole.client.http.BasicAuthInterceptor;
 import com.cubbyhole.client.http.ConnectionInfo;
@@ -141,7 +142,7 @@ public class MainActivity extends Activity
                 currentFragment = new FileListFragment(mainFileListFragmentListener);
                 break;
             case 2:
-                currentFragment = new Fragment();
+                currentFragment = new SharedFileListFragment(mainFileListFragmentListener);
                 break;
         }
         getFragmentManager()
@@ -159,7 +160,7 @@ public class MainActivity extends Activity
                 mTitle = getString(R.string.title_section2);
                 break;
             case 3:
-                mTitle = getString(R.string.title_section3);
+                mTitle = getString(R.string.title_shared_with_me);
                 break;
         }
     }

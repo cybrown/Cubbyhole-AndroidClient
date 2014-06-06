@@ -18,5 +18,6 @@
     <string name="action_link">Link</string>
     <string name="action_upload">Upload</string>
     <string name="action_manage_share">Manage shares</string>
+    <string name="title_shared_with_me">Shared with me</string>
 
 </resources>

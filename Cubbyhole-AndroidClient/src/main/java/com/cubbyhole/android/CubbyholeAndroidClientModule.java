@@ -8,6 +8,7 @@ import com.cubbyhole.android.activity.LoginActivity;
 import com.cubbyhole.android.activity.MainActivity;
 import com.cubbyhole.android.activity.PermissionActivity;
 import com.cubbyhole.android.fragment.FileListFragment;
+import com.cubbyhole.android.fragment.SharedFileListFragment;
 import com.cubbyhole.client.CurrentAccountService;
 import com.cubbyhole.client.http.AccountRestWebService;
 import com.cubbyhole.client.http.BasicAuthInterceptor;
@@ -16,7 +17,6 @@ import com.cubbyhole.client.http.FileRestWebService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -34,7 +34,8 @@ import retrofit.converter.GsonConverter;
         MainActivity.class,
         FileListFragment.class,
         LoginActivity.class,
-        PermissionActivity.class
+        PermissionActivity.class,
+        SharedFileListFragment.class
     }
 )
 public class CubbyholeAndroidClientModule {

@@ -71,17 +71,13 @@ public class FileListFragment extends DialogFragment {
         this.listener = listener;
     }
 
-    private void refreshFileList() {
+    protected void refreshFileList() {
         final Observer<List<File>> listCurrentFileObserver = new Observer<List<File>>() {
             @Override public void onCompleted() { }
             @Override public void onError(Throwable throwable) { }
             @Override
             public void onNext(final List<File> files) {
-                FileListFragment.this.fileCells.clear();
-                for (File file: files) {
-                    FileListFragment.this.fileCells.add(new CellWrapper<File>(file));
-                }
-                ((FileListAdapter) lstFiles.getAdapter()).notifyDataSetChanged();
+                setFilesToShow(files);
             }
         };
         if (currentFile == null) {
@@ -110,6 +106,14 @@ public class FileListFragment extends DialogFragment {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(listCurrentFileObserver);
         }
+    }
+
+    protected void setFilesToShow(List<File> files) {
+        this.fileCells.clear();
+        for (File file: files) {
+            this.fileCells.add(new CellWrapper<File>(file));
+        }
+        ((FileListAdapter) lstFiles.getAdapter()).notifyDataSetChanged();
     }
 
     @Override
