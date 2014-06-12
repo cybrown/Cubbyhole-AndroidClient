@@ -16,7 +16,7 @@ public abstract class GenericListAdapter<T> extends BaseAdapter {
     protected int viewId;
 
     abstract protected long getId(T object);
-    abstract protected void getView(T object, View view);
+    abstract protected void getView(CellWrapper<T> object, View view);
 
     public GenericListAdapter(Context context, List<CellWrapper<T>> objects, int viewId) {
         this.objects = objects;
@@ -42,7 +42,7 @@ public abstract class GenericListAdapter<T> extends BaseAdapter {
     @Override
     public View getView(final int i, View arg1, ViewGroup viewGroup) {
         View view = inflater.inflate(viewId, null);
-        getView(this.objects.get(i).get(), view);
+        getView(this.objects.get(i), view);
         return view;
     }
 }

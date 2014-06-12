@@ -23,8 +23,9 @@ public class FileListAdapter extends GenericListAdapter<File> {
         return object.getId();
     }
 
-    protected void getView(File object, View view) {
-        ((TextView) view.findViewById(R.id.tvTitle)).setText(object.getName());
-        ((TextView) view.findViewById(R.id.tvSubtitle)).setText(String.valueOf(object.getMdate()));
+    @Override
+    protected void getView(CellWrapper<File> object, View view) {
+        ((TextView) view.findViewById(R.id.tvTitle)).setText(object.get().getName());
+        ((TextView) view.findViewById(R.id.tvSubtitle)).setText(String.valueOf(object.get().getMdate()));
     }
 }

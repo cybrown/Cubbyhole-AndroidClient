@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
@@ -14,12 +15,14 @@ import android.widget.ListView;
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
 import com.cubbyhole.android.R;
 import com.cubbyhole.android.adapter.ShareListAdapter;
+import com.cubbyhole.android.cell.ShareCell;
 import com.cubbyhole.android.util.CellWrapper;
 import com.cubbyhole.client.http.AccountRestWebService;
 import com.cubbyhole.client.http.FileRestWebService;
 import com.cubbyhole.client.model.PartialAccount;
 import com.cubbyhole.client.model.Share;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +31,9 @@ import javax.inject.Inject;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 import butterknife.OnClick;
+import rx.Observable;
 import rx.Observer;
+import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
 
 public class PermissionActivity extends Activity {
@@ -37,10 +42,7 @@ public class PermissionActivity extends Activity {
     @InjectView(R.id.lstShares) ListView lstShares;
     private long fileId;
     private List<CellWrapper<Share>> shareCells = new ArrayList<CellWrapper<Share>>();
-
-    private void refreshList() {
-        ((ShareListAdapter) lstShares.getAdapter()).notifyDataSetChanged();
-    }
+    private List<Observable<PartialAccount>> listPartialAccounts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,12 +56,79 @@ public class PermissionActivity extends Activity {
         }
         lstShares.setAdapter(new ShareListAdapter(this, shareCells));
 
-        fileService.getPermissions(fileId)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<Share>>() {
+        listPartialAccounts = new ArrayList<Observable<PartialAccount>>();
+
+        refreshList();
+    }
+
+    private void refreshList() {
+        shareCells.clear();
+        Observable.create(new Observable.OnSubscribe<AbstractMap.SimpleImmutableEntry<PartialAccount, Share>>() {
+            @Override
+            public void call(final Subscriber<? super AbstractMap.SimpleImmutableEntry<PartialAccount, Share>> subscriber) {
+                fileService.getPermissions(fileId)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Observer<List<Share>>() {
+                            @Override
+                            public void onCompleted() {
+
+                            }
+
+                            @Override
+                            public void onError(Throwable throwable) {
+
+                            }
+
+                            @Override
+                            public void onNext(List<Share> shares) {
+                                for (final Share share: shares) {
+                                    Observable<PartialAccount> partialAccountObservable = accountService.findPartialById(share.getId())
+                                            .observeOn(AndroidSchedulers.mainThread());
+
+                                    partialAccountObservable.subscribe(new Observer<PartialAccount>() {
+                                        @Override
+                                        public void onCompleted() {
+
+                                        }
+
+                                        @Override
+                                        public void onError(Throwable throwable) {
+                                            subscriber.onError(throwable);
+                                        }
+
+                                        @Override
+                                        public void onNext(PartialAccount partialAccount) {
+                                            subscriber.onNext(new AbstractMap.SimpleImmutableEntry<PartialAccount, Share>(partialAccount, share));
+                                        }
+                                    });
+                                    listPartialAccounts.add(partialAccountObservable);
+                                }
+                                Observable.merge(listPartialAccounts)
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .subscribe(new Observer<PartialAccount>() {
+                                            @Override
+                                            public void onCompleted() {
+                                                subscriber.onCompleted();
+                                            }
+
+                                            @Override
+                                            public void onError(Throwable throwable) {
+                                                subscriber.onError(throwable);
+                                            }
+
+                                            @Override
+                                            public void onNext(PartialAccount partialAccount) {
+
+                                            }
+                                        });
+                            }
+                        });
+            }
+        }).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<AbstractMap.SimpleImmutableEntry<PartialAccount, Share>>() {
                     @Override
                     public void onCompleted() {
-                        refreshList();
+                        ((ShareListAdapter) lstShares.getAdapter()).notifyDataSetChanged();
                     }
 
                     @Override
@@ -68,12 +137,10 @@ public class PermissionActivity extends Activity {
                     }
 
                     @Override
-                    public void onNext(List<Share> shares) {
-                        shareCells.clear();
-                        for (Share share: shares) {
-                            shareCells.add(new CellWrapper<Share>(share));
-                        }
-                        refreshList();
+                    public void onNext(AbstractMap.SimpleImmutableEntry<PartialAccount, Share> entry) {
+                        ShareCell cell = new ShareCell(entry.getValue());
+                        cell.setAccount(entry.getKey());
+                        shareCells.add(cell);
                     }
                 });
     }
