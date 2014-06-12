@@ -1,5 +1,9 @@
 package com.cubbyhole.android.fragment;
 
+import android.view.Menu;
+import android.view.MenuInflater;
+
+import com.cubbyhole.android.R;
 import com.cubbyhole.client.model.File;
 
 import java.util.List;
@@ -24,5 +28,10 @@ public class SharedFileListFragment extends FileListFragment {
         fileService.listShared()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(listCurrentFileObserver);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.global, menu);
     }
 }
