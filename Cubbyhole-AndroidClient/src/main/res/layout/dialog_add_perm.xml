@@ -6,16 +6,6 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Permission"/>
-
-    <EditText
-        android:id="@+id/txtPerm"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:text="Account"/>
 
     <AutoCompleteTextView

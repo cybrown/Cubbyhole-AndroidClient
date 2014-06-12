@@ -4,12 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
-import android.widget.EditText;
 import android.widget.ListView;
 
 import com.cubbyhole.android.CubbyholeAndroidClientApp;
@@ -25,6 +25,7 @@ import com.cubbyhole.client.model.Share;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
@@ -33,16 +34,16 @@ import butterknife.InjectView;
 import butterknife.OnClick;
 import rx.Observable;
 import rx.Observer;
-import rx.Subscriber;
 import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func2;
 
-public class PermissionActivity extends Activity {
+public class PermissionActivity extends Activity implements AdapterView.OnItemLongClickListener {
 
     @Inject FileRestWebService fileService;
+    @Inject AccountRestWebService accountService;
     @InjectView(R.id.lstShares) ListView lstShares;
     private long fileId;
     private List<CellWrapper<Share>> shareCells = new ArrayList<CellWrapper<Share>>();
-    private List<Observable<PartialAccount>> listPartialAccounts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,103 +56,70 @@ public class PermissionActivity extends Activity {
             fileId = bundle.getLong("fileId");
         }
         lstShares.setAdapter(new ShareListAdapter(this, shareCells));
-
-        listPartialAccounts = new ArrayList<Observable<PartialAccount>>();
-
+        lstShares.setOnItemLongClickListener(this);
         refreshList();
     }
 
     private void refreshList() {
         shareCells.clear();
-        Observable.create(new Observable.OnSubscribe<AbstractMap.SimpleImmutableEntry<PartialAccount, Share>>() {
-            @Override
-            public void call(final Subscriber<? super AbstractMap.SimpleImmutableEntry<PartialAccount, Share>> subscriber) {
-                fileService.getPermissions(fileId)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(new Observer<List<Share>>() {
-                            @Override
-                            public void onCompleted() {
+        fileService.getPermissions(fileId)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<Share>>() {
+                    @Override public void onCompleted() { }
 
-                            }
-
-                            @Override
-                            public void onError(Throwable throwable) {
-
-                            }
-
-                            @Override
-                            public void onNext(List<Share> shares) {
-                                for (final Share share: shares) {
-                                    Observable<PartialAccount> partialAccountObservable = accountService.findPartialById(share.getId())
-                                            .observeOn(AndroidSchedulers.mainThread());
-
-                                    partialAccountObservable.subscribe(new Observer<PartialAccount>() {
-                                        @Override
-                                        public void onCompleted() {
-
-                                        }
-
-                                        @Override
-                                        public void onError(Throwable throwable) {
-                                            subscriber.onError(throwable);
-                                        }
-
-                                        @Override
-                                        public void onNext(PartialAccount partialAccount) {
-                                            subscriber.onNext(new AbstractMap.SimpleImmutableEntry<PartialAccount, Share>(partialAccount, share));
-                                        }
-                                    });
-                                    listPartialAccounts.add(partialAccountObservable);
-                                }
-                                Observable.merge(listPartialAccounts)
-                                        .observeOn(AndroidSchedulers.mainThread())
-                                        .subscribe(new Observer<PartialAccount>() {
-                                            @Override
-                                            public void onCompleted() {
-                                                subscriber.onCompleted();
-                                            }
-
-                                            @Override
-                                            public void onError(Throwable throwable) {
-                                                subscriber.onError(throwable);
-                                            }
-
-                                            @Override
-                                            public void onNext(PartialAccount partialAccount) {
-
-                                            }
-                                        });
-                            }
-                        });
-            }
-        }).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<AbstractMap.SimpleImmutableEntry<PartialAccount, Share>>() {
-                    @Override
-                    public void onCompleted() {
-                        ((ShareListAdapter) lstShares.getAdapter()).notifyDataSetChanged();
+                    @Override public void onError(Throwable throwable) {
+                        Log.e("CUBBYHOLE", "PermissionActivity.onClickBtnAddPerm", throwable);
                     }
 
                     @Override
-                    public void onError(Throwable throwable) {
+                    public void onNext(List<Share> shares) {
+                        final List<Observable<PartialAccount>> listPartialAccounts = new ArrayList<Observable<PartialAccount>>();
+                        for (final Share share : shares) {
+                            listPartialAccounts.add(accountService.findPartialById(share.getAccount()));
+                        }
+                        Observable.from(shares).zip(Observable.merge(listPartialAccounts), new Func2<Share, PartialAccount, Map.Entry<PartialAccount, Share>>() {
+                            @Override
+                            public Map.Entry<PartialAccount, Share> call(Share share, PartialAccount partialAccount) {
+                                return new AbstractMap.SimpleImmutableEntry<PartialAccount, Share>(partialAccount, share);
+                            }
+                        })
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(new Observer<Map.Entry<PartialAccount, Share>>() {
+                                    @Override
+                                    public void onCompleted() {
+                                        ((ShareListAdapter) lstShares.getAdapter()).notifyDataSetChanged();
+                                    }
 
-                    }
+                                    @Override
+                                    public void onError(Throwable throwable) {
+                                        Log.e("CUBBYHOLE", "PermissionActivity.refreshList", throwable);
+                                    }
 
-                    @Override
-                    public void onNext(AbstractMap.SimpleImmutableEntry<PartialAccount, Share> entry) {
-                        ShareCell cell = new ShareCell(entry.getValue());
-                        cell.setAccount(entry.getKey());
-                        shareCells.add(cell);
+                                    @Override
+                                    public void onNext(Map.Entry<PartialAccount, Share> partialAccountShareEntry) {
+                                        ShareCell cell = new ShareCell(partialAccountShareEntry.getValue());
+                                        cell.setAccount(partialAccountShareEntry.getKey());
+                                        shareCells.add(cell);
+                                    }
+                                });
                     }
                 });
     }
 
-    @Inject
-    AccountRestWebService accountService;
+    @OnClick(R.id.btnAddReadPerm)
+    public void onClickBtnAddReadPerm(View view) {
+        final String permission = "READ";
+        showAddPermDialog(permission);
+    }
 
-    @OnClick(R.id.btnAddPerm)
-    public void onClickBtnAddPerm(View view) {
+    @OnClick(R.id.btnAddWritePerm)
+    public void onClickBtnAddWritePerm(View view) {
+        final String permission = "WRITE";
+        showAddPermDialog(permission);
+    }
+
+    private void showAddPermDialog(final String permission) {
         View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_perm, null);
-        final EditText txtPerm = (EditText) dialogView.findViewById(R.id.txtPerm);
         final AutoCompleteTextView txtAccount = (AutoCompleteTextView) dialogView.findViewById(R.id.txtAccount);
         txtAccount.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -163,11 +131,11 @@ public class PermissionActivity extends Activity {
                             .subscribe(new Observer<List<PartialAccount>>() {
                                 @Override
                                 public void onCompleted() {
-                            }
+                                }
 
                                 @Override
                                 public void onError(Throwable throwable) {
-
+                                    Log.e("CUBBYHOLE", "PermissionActivity.onClickBtnAddPerm", throwable);
                                 }
 
                                 @Override
@@ -199,21 +167,22 @@ public class PermissionActivity extends Activity {
 
                                     @Override
                                     public void onError(Throwable throwable) {
-
+                                        Log.e("CUBBYHOLE", "PermissionActivity.onClickBtnAddPerm", throwable);
                                     }
 
                                     @Override
                                     public void onNext(PartialAccount partialAccount) {
-                                        fileService.addPermission(fileId, txtPerm.getText().toString(), partialAccount.getId())
+                                        fileService.addPermission(fileId, permission, partialAccount.getId())
                                                 .observeOn(AndroidSchedulers.mainThread())
                                                 .subscribe(new Observer<Void>() {
                                                     @Override
                                                     public void onCompleted() {
+                                                        refreshList();
                                                     }
 
                                                     @Override
                                                     public void onError(Throwable throwable) {
-
+                                                        Log.e("CUBBYHOLE", "PermissionActivity.onClickBtnAddPerm", throwable);
                                                     }
 
                                                     @Override
@@ -228,11 +197,37 @@ public class PermissionActivity extends Activity {
                 .setNegativeButton("Cancel", null)
                 .create()
                 .show();
-        }
+    }
 
-   @Override
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         ButterKnife.reset(this);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+        ShareCell cell = (ShareCell) adapterView.getItemAtPosition(i);
+        fileService.removePermission(
+                cell.get().getFile(),
+                cell.get().getId())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Void>() {
+                    @Override
+                    public void onCompleted() {
+                        refreshList();
+                    }
+
+                    @Override
+                    public void onError(Throwable throwable) {
+                        Log.e("CUBBYHOLE", "PermissionActivity.onItemLongClick", throwable);
+                    }
+
+                    @Override
+                    public void onNext(Void aVoid) {
+
+                    }
+                });
+        return false;
     }
 }

@@ -7,8 +7,14 @@
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Add permission"
-        android:id="@+id/btnAddPerm" />
+        android:text="Add READ permission"
+        android:id="@+id/btnAddReadPerm" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Add WRITE permission"
+        android:id="@+id/btnAddWritePerm" />
 
     <ListView
         android:id="@+id/lstShares"

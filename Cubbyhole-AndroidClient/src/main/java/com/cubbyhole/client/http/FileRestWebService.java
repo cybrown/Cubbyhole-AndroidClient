@@ -29,5 +29,5 @@ public interface FileRestWebService {
     @PUT("/files/{file}/raw") Observable<Void> write(@Path("file") long fileId, @Body TypedOutput data);
     @PUT("/files/{file}/shares/{perm}") @FormUrlEncoded Observable<Void> addPermission(@Path("file") long fileId, @Path("perm") String perm, @Field("account") long account);
     @GET("/files/{file}/shares") Observable<List<Share>> getPermissions(@Path("file") long fileId);
-    @DELETE("/files/{file}/shares/{perm}") @FormUrlEncoded Observable<Void> removePermission(@Path("file") long fileId, @Path("perm") String perm, @Field("account") long account);
+    @DELETE("/files/{file}/shares/{shareId}") Observable<Void> removePermission(@Path("file") long fileId, @Path("shareId") Long shareId);
 }
