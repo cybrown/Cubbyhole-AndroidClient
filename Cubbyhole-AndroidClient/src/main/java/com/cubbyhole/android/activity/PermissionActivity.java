@@ -122,7 +122,7 @@ public class PermissionActivity extends Activity {
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        accountService.findByUsername(txtAccount.getText().toString())
+                        accountService.findPartialByUsername(txtAccount.getText().toString())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(new Observer<PartialAccount>() {
                                     @Override

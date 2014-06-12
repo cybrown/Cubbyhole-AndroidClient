@@ -12,5 +12,6 @@ import rx.Observable;
 public interface AccountRestWebService {
     @GET("/whoami") Observable<Account> whoami();
     @GET("/partial/starts-with/{begin}") Observable<List<PartialAccount>> findStartsWith(@Path("begin") String begin);
-    @GET("/partial/by-username/{username}") Observable<PartialAccount> findByUsername(@Path("username") String username);
+    @GET("/partial/by-username/{accountId}") Observable<PartialAccount> findPartialById(@Path("accountId") long accountId);
+    @GET("/partial/by-username/{username}") Observable<PartialAccount> findPartialByUsername(@Path("username") String username);
 }
